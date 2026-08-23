@@ -1,0 +1,12 @@
+[package]
+name = "meta-explain"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Educational glossary for metadata tags."
+
+[dependencies]
+meta-core.workspace = true
+serde.workspace = true
+serde_json.workspace = true

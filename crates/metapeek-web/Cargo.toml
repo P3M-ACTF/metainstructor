@@ -1,0 +1,19 @@
+[package]
+name = "metapeek-web"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Embedded Axum web UI for MetaPeek."
+
+[dependencies]
+meta-core.workspace = true
+meta-explain.workspace = true
+anyhow.workspace = true
+axum = { version = "0.8", features = ["multipart"] }
+rust-embed = "8"
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tower-http = { version = "0.6", features = ["cors"] }
+webbrowser = "1"
