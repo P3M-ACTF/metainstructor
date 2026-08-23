@@ -2,9 +2,13 @@
 resolver = "2"
 members = [
     "crates/meta-core",
+    "crates/meta-explain",
+    "crates/metapeek-web",
 ]
 default-members = [
     "crates/meta-core",
+    "crates/meta-explain",
+    "crates/metapeek-web",
 ]
 
 [workspace.package]
@@ -18,6 +22,8 @@ description = "Local, exhaustive metadata analysis — educational and private b
 
 [workspace.dependencies]
 meta-core = { path = "crates/meta-core", version = "0.2.0" }
+meta-explain = { path = "crates/meta-explain", version = "0.2.0" }
+metapeek-web = { path = "crates/metapeek-web", version = "0.2.0" }
 anyhow = "1"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std", "serde"] }
 serde = { version = "1", features = ["derive"] }
