@@ -16,6 +16,7 @@ impl TiffBuf {
         Self { le: true, data }
     }
 
+    #[allow(dead_code)]
     fn write_ifd(&mut self, entries: &[IfdEntry]) -> usize {
         let start = self.data.len();
         self.data.extend_from_slice(&(entries.len() as u16).to_le_bytes());
