@@ -1,0 +1,20 @@
+[package]
+name = "metapeek-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "MetaPeek command-line interface."
+
+[[bin]]
+name = "metapeek"
+path = "src/main.rs"
+
+[dependencies]
+meta-core.workspace = true
+meta-explain.workspace = true
+metapeek-web.workspace = true
+anyhow.workspace = true
+clap = { version = "4", features = ["derive"] }
+serde_json.workspace = true
+tokio.workspace = true

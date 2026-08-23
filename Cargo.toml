@@ -3,11 +3,13 @@ resolver = "2"
 members = [
     "crates/meta-core",
     "crates/meta-explain",
+    "crates/metapeek-cli",
     "crates/metapeek-web",
 ]
 default-members = [
     "crates/meta-core",
     "crates/meta-explain",
+    "crates/metapeek-cli",
     "crates/metapeek-web",
 ]
 
