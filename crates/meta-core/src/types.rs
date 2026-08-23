@@ -178,7 +178,9 @@ impl Analysis {
                 f.namespace
                     .as_deref()
                     .is_some_and(|ns| ns.starts_with(prefix))
-                    || f.key.to_ascii_lowercase().starts_with(&prefix.to_ascii_lowercase())
+                    || f.key
+                        .to_ascii_lowercase()
+                        .starts_with(&prefix.to_ascii_lowercase())
             })
             .collect()
     }
@@ -218,9 +220,7 @@ pub fn humanize(key: &str) -> String {
         if i > 0 && ch.is_uppercase() && out.chars().last().is_some_and(|p| p.is_lowercase()) {
             out.push(' ');
         }
-        if out.chars().last().is_some_and(|p| p == ' ') {
-            out.extend(ch.to_uppercase());
-        } else if out.is_empty() {
+        if out.is_empty() || out.chars().last().is_some_and(|p| p == ' ') {
             out.extend(ch.to_uppercase());
         } else {
             out.push(ch);

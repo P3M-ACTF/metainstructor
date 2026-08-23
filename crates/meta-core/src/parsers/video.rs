@@ -2,15 +2,20 @@ use crate::parsers::xmp;
 use crate::types::{Field, Section};
 
 pub fn parse_video(data: &[u8], mime: &str) -> (Vec<Section>, Vec<String>) {
-    if mime.contains("matroska") || mime.contains("webm") || data.starts_with(&[0x1A, 0x45, 0xDF, 0xA3])
+    if mime.contains("matroska")
+        || mime.contains("webm")
+        || data.starts_with(&[0x1A, 0x45, 0xDF, 0xA3])
     {
         return parse_mkv(data);
     }
-    if mime.contains("avi") || (data.starts_with(b"RIFF") && data.len() >= 12 && &data[8..12] == b"AVI ")
+    if mime.contains("avi")
+        || (data.starts_with(b"RIFF") && data.len() >= 12 && &data[8..12] == b"AVI ")
     {
         return parse_avi(data);
     }
-    if data.len() >= 8 && &data[4..8] == b"ftyp" || mime.contains("mp4") || mime.contains("quicktime")
+    if data.len() >= 8 && &data[4..8] == b"ftyp"
+        || mime.contains("mp4")
+        || mime.contains("quicktime")
     {
         return parse_mp4(data);
     }
@@ -21,7 +26,15 @@ pub fn parse_mp4(data: &[u8]) -> (Vec<Section>, Vec<String>) {
     let mut sections = Vec::new();
     let mut warnings = Vec::new();
     let mut atoms = Section::new("mp4-atoms", "MP4 / QuickTime atoms");
-    walk_atoms(data, 0, data.len(), 0, &mut atoms, &mut sections, &mut warnings);
+    walk_atoms(
+        data,
+        0,
+        data.len(),
+        0,
+        &mut atoms,
+        &mut sections,
+        &mut warnings,
+    );
     if !atoms.is_empty() {
         sections.insert(0, atoms);
     }
@@ -133,10 +146,22 @@ fn walk_atoms(
                 } else {
                     payload_s
                 };
-                walk_atoms(data, inner_start, payload_e, depth + 1, atoms, sections, warnings);
+                walk_atoms(
+                    data,
+                    inner_start,
+                    payload_e,
+                    depth + 1,
+                    atoms,
+                    sections,
+                    warnings,
+                );
             }
-            other if other.starts_with('©') || other == "xyz " || other == "name" || other == "data"
-            => {
+            other
+                if other.starts_with('©')
+                    || other == "xyz "
+                    || other == "name"
+                    || other == "data" =>
+            {
                 let mut s = Section::new("mp4-udta-item", "MP4 user data");
                 let text = String::from_utf8_lossy(payload)
                     .trim_matches('\0')
@@ -294,9 +319,33 @@ fn parse_mkv(data: &[u8]) -> (Vec<Section>, Vec<String>) {
         let payload_e = (payload_s + size as usize).min(data.len());
         if let Some(name) = mkv_id_name(id) {
             let payload = &data[payload_s..payload_e];
+            let master = matches!(
+                name,
+                "EBML" | "Segment" | "Info" | "Tracks" | "TrackEntry" | "Tags" | "SeekHead"
+            );
+            if master {
+                hdr.add(name, format!("master @0x{i:X} {size} bytes"), Some("MKV"));
+                found += 1;
+                i = payload_s;
+                continue;
+            }
             match name {
-                "Title" | "MuxingApp" | "WritingApp" | "DocType" => {
-                    hdr.add(name, String::from_utf8_lossy(payload).into_owned(), Some("MKV"));
+                "Title" | "MuxingApp" | "WritingApp" | "DocType" | "CodecID" => {
+                    hdr.add(
+                        name,
+                        String::from_utf8_lossy(payload).into_owned(),
+                        Some("MKV"),
+                    );
+                }
+                "TrackNumber" | "TrackType" | "TimestampScale" => {
+                    let n = match payload.len() {
+                        1 => payload[0] as u64,
+                        2 => u16::from_be_bytes(payload.try_into().ok().unwrap_or([0; 2])) as u64,
+                        4 => u32::from_be_bytes(payload.try_into().ok().unwrap_or([0; 4])) as u64,
+                        8 => u64::from_be_bytes(payload.try_into().ok().unwrap_or([0; 8])),
+                        _ => payload.len() as u64,
+                    };
+                    hdr.add(name, n.to_string(), Some("MKV"));
                 }
                 "Duration" => {
                     if payload.len() == 8 {
@@ -405,7 +454,7 @@ fn parse_avi(data: &[u8]) -> (Vec<Section>, Vec<String>) {
     let mut s = Section::new("avi", "AVI RIFF");
     s.add("FormType", "AVI", Some("AVI"));
     let mut i = 12usize;
-    while i + 8 <= data.len() && s.fields.len() < 80 {
+    while i + 8 <= data.len() && s.fields.len() < 160 {
         let id = String::from_utf8_lossy(&data[i..i + 4]).into_owned();
         let size = u32::from_le_bytes(data[i + 4..i + 8].try_into().unwrap()) as usize;
         let start = i + 8;
@@ -415,7 +464,45 @@ fn parse_avi(data: &[u8]) -> (Vec<Section>, Vec<String>) {
                 .with_namespace("AVI")
                 .with_span(i as u64, (8 + size) as u64),
         );
-        if id == "IDIT" || id == "ISFT" || id == "INAM" || id == "ICMT" {
+        if id == "LIST" && start + 4 <= end {
+            let list_type = String::from_utf8_lossy(&data[start..start + 4]).into_owned();
+            s.add("LIST", list_type, Some("AVI"));
+            let mut j = start + 4;
+            while j + 8 <= end && s.fields.len() < 160 {
+                let cid = String::from_utf8_lossy(&data[j..j + 4]).into_owned();
+                let csize = u32::from_le_bytes(data[j + 4..j + 8].try_into().unwrap()) as usize;
+                let cstart = j + 8;
+                let cend = (cstart + csize).min(end);
+                if matches!(
+                    cid.as_str(),
+                    "IDIT" | "ISFT" | "INAM" | "ICMT" | "IART" | "ICOP"
+                ) {
+                    s.add(
+                        cid,
+                        String::from_utf8_lossy(&data[cstart..cend])
+                            .trim_end_matches('\0')
+                            .to_string(),
+                        Some("AVI:INFO"),
+                    );
+                } else if cid == "avih" && csize >= 36 && cstart + 36 <= data.len() {
+                    let usec = u32::from_le_bytes(data[cstart..cstart + 4].try_into().unwrap());
+                    let frames =
+                        u32::from_le_bytes(data[cstart + 16..cstart + 20].try_into().unwrap());
+                    let w = u32::from_le_bytes(data[cstart + 32..cstart + 36].try_into().unwrap());
+                    s.add("MicroSecPerFrame", usec.to_string(), Some("AVI:avih"));
+                    s.add("TotalFrames", frames.to_string(), Some("AVI:avih"));
+                    s.add("Width", w.to_string(), Some("AVI:avih"));
+                } else {
+                    s.fields.push(
+                        Field::new(cid, format!("{csize} bytes"))
+                            .with_namespace("AVI:LIST")
+                            .with_span(j as u64, (8 + csize) as u64),
+                    );
+                }
+                j = cend + (csize % 2);
+            }
+        }
+        if matches!(id.as_str(), "IDIT" | "ISFT" | "INAM" | "ICMT") {
             s.add(
                 id,
                 String::from_utf8_lossy(&data[start..end])

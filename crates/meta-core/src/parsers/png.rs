@@ -37,9 +37,12 @@ pub fn parse_png(data: &[u8]) -> PngParse {
         let payload = &data[data_start..data_end];
         let crc = u32::from_be_bytes(data[data_end..data_end + 4].try_into().unwrap());
         chunks.fields.push(
-            Field::new(format!("{idx}:{name}"), format!("{len} bytes crc={crc:08X}"))
-                .with_namespace("PNG")
-                .with_span(i as u64, (12 + len) as u64),
+            Field::new(
+                format!("{idx}:{name}"),
+                format!("{len} bytes crc={crc:08X}"),
+            )
+            .with_namespace("PNG")
+            .with_span(i as u64, (12 + len) as u64),
         );
         match name.as_str() {
             "IHDR" if payload.len() >= 13 => {
@@ -148,8 +151,7 @@ fn push_text(out: &mut PngParse, payload: &[u8], ns: &str, compressed: bool) {
         }
     }
     let mut s = Section::new("png-text", "PNG text");
-    s.fields
-        .push(Field::new(keyword, value).with_namespace(ns));
+    s.fields.push(Field::new(keyword, value).with_namespace(ns));
     out.sections.push(s);
 }
 
@@ -190,7 +192,7 @@ fn push_itxt(out: &mut PngParse, payload: &[u8]) {
 }
 
 fn inflate(data: &[u8]) -> Option<String> {
-    let mut d = ZlibDecoder::new(data);
+    let mut d = ZlibDecoder::new(data).take(8 * 1024 * 1024);
     let mut out = Vec::new();
     d.read_to_end(&mut out).ok()?;
     Some(String::from_utf8_lossy(&out).into_owned())

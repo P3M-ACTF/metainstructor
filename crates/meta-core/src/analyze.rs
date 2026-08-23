@@ -25,8 +25,7 @@ pub fn analyze_buffer(data: &[u8], options: AnalyzeOptions) -> Analysis {
         magic.mime = "application/json".into();
     }
 
-    let include_hashes = options.include_hashes || true;
-    let hashes = if include_hashes {
+    let hashes = if options.include_hashes {
         compute_hashes(data)
     } else {
         Default::default()
@@ -54,11 +53,7 @@ pub fn analyze_buffer(data: &[u8], options: AnalyzeOptions) -> Analysis {
         format!("{:.4} bits/byte", analysis.entropy),
         Some("General"),
     );
-    general.add(
-        "Magic",
-        analysis.magic.description.clone(),
-        Some("General"),
-    );
+    general.add("Magic", analysis.magic.description.clone(), Some("General"));
     general.add(
         "Signature",
         analysis.magic.hex_signature.clone(),
@@ -97,11 +92,7 @@ pub fn analyze_buffer(data: &[u8], options: AnalyzeOptions) -> Analysis {
         analysis.push_section(hs);
     }
 
-    let (secs, warns) = parsers::parse_for_mime(
-        data,
-        &analysis.mime,
-        options.filename.as_deref(),
-    );
+    let (secs, warns) = parsers::parse_for_mime(data, &analysis.mime, options.filename.as_deref());
     analysis.warnings.extend(warns);
     for s in secs {
         analysis.push_section(s);
@@ -109,14 +100,24 @@ pub fn analyze_buffer(data: &[u8], options: AnalyzeOptions) -> Analysis {
 
     if analysis.mime.contains("heic") || analysis.mime.contains("heif") {
         analysis.notes_educativas.push(
-            "HEIC is parsed without libheif: magic, brands and any embedded EXIF/XMP are shown. Pixel decode is optional.".into(),
+            "HEIC/HEIF: without libheif this tool lists ISO-BMFF boxes and extracts embedded EXIF/XMP when present. It does not decode pixels or walk item/iloc trees.".into(),
         );
     }
     analysis
 }
 
 pub fn analyze_path(path: &Path) -> crate::error::Result<Analysis> {
+    Ok(analyze_path_with_bytes(path)?.1)
+}
+
+/// Single read: bytes and analysis come from the same buffer (no TOCTOU).
+pub fn analyze_path_with_bytes(path: &Path) -> crate::error::Result<(Vec<u8>, Analysis)> {
     let data = fs::read(path)?;
+    let analysis = analyze_path_from_bytes(path, &data)?;
+    Ok((data, analysis))
+}
+
+pub fn analyze_path_from_bytes(path: &Path, data: &[u8]) -> crate::error::Result<Analysis> {
     let meta = fs::metadata(path)?;
     let mut options = AnalyzeOptions::from_filename(
         path.file_name()
@@ -134,7 +135,7 @@ pub fn analyze_path(path: &Path) -> crate::error::Result<Analysis> {
     if let Ok(atime) = meta.accessed() {
         options.atime = Some(to_rfc(atime));
     }
-    Ok(analyze_buffer(&data, options))
+    Ok(analyze_buffer(data, options))
 }
 
 pub fn analyze_html_string(html: &str, filename: Option<String>) -> Analysis {

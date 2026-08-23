@@ -9,6 +9,7 @@ pub fn is_office_mime(mime: &str) -> bool {
         || mime.contains("msword")
         || mime.contains("ms-excel")
         || mime.contains("ms-powerpoint")
+        || mime.contains("ms-office")
         || mime == "application/rtf"
         || mime.ends_with("epub+zip")
 }
@@ -16,6 +17,15 @@ pub fn is_office_mime(mime: &str) -> bool {
 pub fn parse_office(data: &[u8], mime: &str) -> (Vec<Section>, Vec<String>) {
     if mime.contains("rtf") || data.starts_with(b"{\\rtf") {
         return parse_rtf(data);
+    }
+    if data.starts_with(&[0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1]) {
+        let mut s = Section::new("ole", "OLE Compound File");
+        s.add("Signature", "D0 CF 11 E0 A1 B1 1A E1", Some("OLE"));
+        s.add("Size", data.len().to_string(), Some("OLE"));
+        return (
+            vec![s],
+            vec!["Legacy Office (.doc/.xls/.ppt) OLE/CFBF is detected but not parsed. Export to OOXML or use MetaTrace + ExifTool.".into()],
+        );
     }
     parse_zip_xml_package(data)
 }
@@ -53,22 +63,23 @@ pub fn parse_zip_xml_package(data: &[u8]) -> (Vec<Section>, Vec<String>) {
     ];
 
     for i in 0..zip.len() {
-        let mut file = match zip.by_index(i) {
+        let file = match zip.by_index(i) {
             Ok(f) => f,
             Err(_) => continue,
         };
         let name = file.name().to_string();
-        listing.fields.push(
-            Field::new(name.clone(), format!("{} bytes", file.size())).with_namespace("ZIP"),
-        );
+        listing
+            .fields
+            .push(Field::new(name.clone(), format!("{} bytes", file.size())).with_namespace("ZIP"));
         let wanted = interesting.iter().any(|p| name == *p)
             || name.ends_with(".opf")
             || name.contains("metadata");
-        if !wanted || file.size() > 2_000_000 {
+        if !wanted {
             continue;
         }
+        let mut limited = file.take(2_000_000);
         let mut buf = Vec::new();
-        if file.read_to_end(&mut buf).is_err() {
+        if limited.read_to_end(&mut buf).is_err() {
             continue;
         }
         if name == "mimetype" {
@@ -140,11 +151,17 @@ fn flatten_xml(xml: &str, ns: &str, origin: &str) -> Section {
                 let local = name.rsplit(':').next().unwrap_or(&name).to_string();
                 for attr in e.attributes().flatten() {
                     let an = String::from_utf8_lossy(attr.key.as_ref()).into_owned();
-                    let av = attr.unescape_value().map(|v| v.into_owned()).unwrap_or_default();
+                    let av = attr
+                        .unescape_value()
+                        .map(|v| v.into_owned())
+                        .unwrap_or_default();
                     if !av.is_empty() && !an.contains("xmlns") {
                         section.fields.push(
-                            Field::new(format!("{local}@{}", an.rsplit(':').next().unwrap_or(&an)), av)
-                                .with_namespace(ns),
+                            Field::new(
+                                format!("{local}@{}", an.rsplit(':').next().unwrap_or(&an)),
+                                av,
+                            )
+                            .with_namespace(ns),
                         );
                     }
                 }
@@ -155,11 +172,17 @@ fn flatten_xml(xml: &str, ns: &str, origin: &str) -> Section {
                 let local = name.rsplit(':').next().unwrap_or(&name).to_string();
                 for attr in e.attributes().flatten() {
                     let an = String::from_utf8_lossy(attr.key.as_ref()).into_owned();
-                    let av = attr.unescape_value().map(|v| v.into_owned()).unwrap_or_default();
+                    let av = attr
+                        .unescape_value()
+                        .map(|v| v.into_owned())
+                        .unwrap_or_default();
                     if !av.is_empty() {
                         section.fields.push(
-                            Field::new(format!("{local}@{}", an.rsplit(':').next().unwrap_or(&an)), av)
-                                .with_namespace(ns),
+                            Field::new(
+                                format!("{local}@{}", an.rsplit(':').next().unwrap_or(&an)),
+                                av,
+                            )
+                            .with_namespace(ns),
                         );
                     }
                 }
@@ -191,21 +214,8 @@ fn parse_rtf(data: &[u8]) -> (Vec<Section>, Vec<String>) {
     let text = String::from_utf8_lossy(data);
     let mut sec = Section::new("rtf", "RTF info");
     for key in [
-        "title",
-        "author",
-        "company",
-        "operator",
-        "creatim",
-        "revtim",
-        "printim",
-        "version",
-        "edmins",
-        "nofpages",
-        "nofwords",
-        "manager",
-        "subject",
-        "keywords",
-        "comment",
+        "title", "author", "company", "operator", "creatim", "revtim", "printim", "version",
+        "edmins", "nofpages", "nofwords", "manager", "subject", "keywords", "comment",
     ] {
         let pat = format!("\\{key}");
         if let Some(idx) = text.find(&pat) {
@@ -222,9 +232,15 @@ fn parse_rtf(data: &[u8]) -> (Vec<Section>, Vec<String>) {
 fn take_rtf_value(s: &str) -> String {
     let s = s.trim_start();
     if let Some(stripped) = s.strip_prefix('{') {
-        return stripped.split('}').next().unwrap_or("").replace('\\', "").trim().to_string();
+        return stripped
+            .split('}')
+            .next()
+            .unwrap_or("")
+            .replace('\\', "")
+            .trim()
+            .to_string();
     }
-    s.split(|c: char| c == '\\' || c == '{' || c == '}')
+    s.split(['\\', '{', '}'])
         .next()
         .unwrap_or("")
         .trim()

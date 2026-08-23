@@ -30,7 +30,10 @@ pub fn parse_eml(data: &[u8]) -> (Vec<Section>, Vec<String>) {
 fn split_headers(text: &str) -> (Vec<(String, String)>, String) {
     let normalized = text.replace("\r\n", "\n");
     if let Some(idx) = normalized.find("\n\n") {
-        (parse_header_block(&normalized[..idx]), normalized[idx + 2..].to_string())
+        (
+            parse_header_block(&normalized[..idx]),
+            normalized[idx + 2..].to_string(),
+        )
     } else {
         (parse_header_block(&normalized), String::new())
     }

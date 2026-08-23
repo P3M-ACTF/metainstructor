@@ -15,7 +15,11 @@ pub mod xmp;
 
 use crate::types::Section;
 
-pub fn parse_for_mime(data: &[u8], mime: &str, filename: Option<&str>) -> (Vec<Section>, Vec<String>) {
+pub fn parse_for_mime(
+    data: &[u8],
+    mime: &str,
+    filename: Option<&str>,
+) -> (Vec<Section>, Vec<String>) {
     let name = filename.unwrap_or("").to_ascii_lowercase();
     if mime.starts_with("image/")
         || name.ends_with(".jpg")
@@ -63,10 +67,16 @@ pub fn parse_for_mime(data: &[u8], mime: &str, filename: Option<&str>) -> (Vec<S
         || name.ends_with(".ods")
         || name.ends_with(".odp")
         || name.ends_with(".rtf")
+        || name.ends_with(".doc")
+        || name.ends_with(".xls")
+        || name.ends_with(".ppt")
     {
         return office::parse_office(data, mime);
     }
-    if mime.contains("epub") || name.ends_with(".epub") || mime == "application/zip" || name.ends_with(".zip")
+    if mime.contains("epub")
+        || name.ends_with(".epub")
+        || mime == "application/zip"
+        || name.ends_with(".zip")
     {
         return office::parse_zip_xml_package(data);
     }

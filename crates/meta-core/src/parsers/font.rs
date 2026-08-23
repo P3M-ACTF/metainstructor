@@ -105,7 +105,13 @@ fn parse_name_table(data: &[u8], offset: usize, length: usize) -> Option<Section
 fn utf16be(raw: &[u8]) -> String {
     let units: Vec<u16> = raw
         .chunks(2)
-        .filter_map(|c| if c.len() == 2 { Some(u16::from_be_bytes([c[0], c[1]])) } else { None })
+        .filter_map(|c| {
+            if c.len() == 2 {
+                Some(u16::from_be_bytes([c[0], c[1]]))
+            } else {
+                None
+            }
+        })
         .collect();
     String::from_utf16_lossy(&units)
 }

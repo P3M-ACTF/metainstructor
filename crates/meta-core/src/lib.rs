@@ -7,10 +7,14 @@ pub mod fixture_jpeg;
 pub mod hashes;
 pub mod magic;
 pub mod parsers;
+pub mod text;
 pub mod types;
 
-pub use analyze::{analyze_buffer, analyze_html_string, analyze_json_string, analyze_path};
+pub use analyze::{
+    analyze_buffer, analyze_html_string, analyze_json_string, analyze_path, analyze_path_with_bytes,
+};
 pub use error::{MetaError, Result};
+pub use text::truncate_chars;
 pub use types::{Analysis, AnalyzeOptions, Field, Hashes, Magic, Section, Source};
 
 #[cfg(test)]
@@ -97,7 +101,10 @@ mod tests {
         write_fixture("sample.png", &png);
         let a = analyze_buffer(&png, AnalyzeOptions::from_filename("sample.png"));
         assert!(
-            a.sections.iter().any(|s| s.fields.iter().any(|f| f.key == "Comment" || f.value.contains("hello"))),
+            a.sections.iter().any(|s| s
+                .fields
+                .iter()
+                .any(|f| f.key == "Comment" || f.value.contains("hello"))),
             "PNG text missing: {:?}",
             a.sections.iter().map(|s| &s.id).collect::<Vec<_>>()
         );
@@ -110,6 +117,34 @@ mod tests {
         let a = analyze_buffer(pdf, AnalyzeOptions::from_filename("sample.pdf"));
         assert_eq!(a.mime, "application/pdf");
         assert!(a.find_field("Title").is_some() || a.find_field("EofMarkers").is_some());
+    }
+
+    #[test]
+    fn ole_compound_is_detected_not_parsed() {
+        let mut ole = vec![0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1];
+        ole.extend_from_slice(&[0u8; 64]);
+        let a = analyze_buffer(&ole, AnalyzeOptions::from_filename("legacy.doc"));
+        assert!(a
+            .warnings
+            .iter()
+            .any(|w| w.contains("OLE") || w.contains("not parsed")));
+    }
+
+    #[test]
+    fn heic_note_is_honest() {
+        let mut heic = vec![0u8; 32];
+        heic[4..8].copy_from_slice(b"ftyp");
+        heic[8..12].copy_from_slice(b"heic");
+        let a = analyze_buffer(&heic, AnalyzeOptions::from_filename("a.heic"));
+        assert!(
+            a.notes_educativas
+                .iter()
+                .any(|n| n.contains("iloc") || n.contains("HEIC"))
+                || a.warnings
+                    .iter()
+                    .any(|w| w.contains("HEIC") || w.contains("iloc")),
+            "expected honest HEIC note"
+        );
     }
 
     #[test]
@@ -150,7 +185,8 @@ mod tests {
             enc.set_depth(png::BitDepth::Eight);
             enc.add_text_chunk("Comment".into(), "hello from png".into())
                 .unwrap();
-            enc.add_text_chunk("Author".into(), "MetaPeek".into()).unwrap();
+            enc.add_text_chunk("Author".into(), "MetaPeek".into())
+                .unwrap();
             let mut w = enc.write_header().unwrap();
             w.write_image_data(&[255, 0, 0, 0, 255, 0, 0, 0, 255, 255, 255, 0])
                 .unwrap();

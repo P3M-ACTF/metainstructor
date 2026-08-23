@@ -45,7 +45,8 @@ pub fn parse_html_str(html: &str) -> (Vec<Section>, Vec<String>) {
             continue;
         }
         links.fields.push(
-            Field::new(if rel.is_empty() { "href" } else { &rel }, href).with_namespace("HTML:link"),
+            Field::new(if rel.is_empty() { "href" } else { &rel }, href)
+                .with_namespace("HTML:link"),
         );
     }
     if !links.is_empty() {
@@ -54,12 +55,7 @@ pub fn parse_html_str(html: &str) -> (Vec<Section>, Vec<String>) {
 
     let mut jsonld = Section::new("html-jsonld", "JSON-LD");
     for block in extract_json_ld(html) {
-        flatten_json(
-            &block,
-            "JSON-LD",
-            &mut jsonld,
-            0,
-        );
+        flatten_json(&block, "JSON-LD", &mut jsonld, 0);
     }
     if !jsonld.is_empty() {
         sections.push(jsonld);
@@ -107,9 +103,9 @@ pub fn flatten_json(value: &serde_json::Value, prefix: &str, section: &mut Secti
                         flatten_json(v, &path, section, depth + 1);
                     }
                     other => {
-                        section.fields.push(
-                            Field::new(path, json_scalar(other)).with_namespace("JSON"),
-                        );
+                        section
+                            .fields
+                            .push(Field::new(path, json_scalar(other)).with_namespace("JSON"));
                     }
                 }
             }
@@ -136,7 +132,7 @@ fn json_scalar(v: &serde_json::Value) -> String {
 }
 
 fn decode_text(data: &[u8]) -> String {
-    if let Some(s) = std::str::from_utf8(data).ok() {
+    if let Ok(s) = std::str::from_utf8(data) {
         return s.to_string();
     }
     encoding_rs::UTF_8.decode(data).0.into_owned()

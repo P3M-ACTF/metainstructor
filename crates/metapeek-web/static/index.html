@@ -12,11 +12,11 @@
       <h1>MetaPeek</h1>
       <p class="tag">Análisis local exhaustivo · sin lista blanca · sin Node</p>
     </div>
-    <nav>
-      <button data-tab="summary" class="active">Resumen</button>
-      <button data-tab="all">Todos los campos</button>
-      <button data-tab="map">Mapa</button>
-      <button data-tab="timeline">Timeline</button>
+    <nav role="tablist" aria-label="Vistas">
+      <button type="button" role="tab" data-tab="summary" class="active" aria-selected="true" aria-controls="summary" id="tab-summary">Resumen</button>
+      <button type="button" role="tab" data-tab="all" aria-selected="false" aria-controls="all" id="tab-all">Todos los campos</button>
+      <button type="button" role="tab" data-tab="map" aria-selected="false" aria-controls="map" id="tab-map">Mapa</button>
+      <button type="button" role="tab" data-tab="timeline" aria-selected="false" aria-controls="timeline" id="tab-timeline">Timeline</button>
     </nav>
   </header>
 
@@ -24,32 +24,36 @@
     <div id="drop" class="drop">
       <strong>Arrastra un archivo</strong>
       <span>o pega una URL / HTML / JSON</span>
+      <label class="visually-hidden" for="file">Archivo local</label>
       <input type="file" id="file" />
     </div>
     <div class="row">
+      <label class="visually-hidden" for="url">URL pública</label>
       <input type="url" id="url" placeholder="https://…" />
-      <button id="fetch">Fetch local</button>
+      <button type="button" id="fetch">Fetch local</button>
     </div>
+    <label class="visually-hidden" for="paste">HTML o JSON</label>
     <textarea id="paste" rows="4" placeholder="Pega HTML o JSON…"></textarea>
     <div class="row">
-      <button id="analyze-html">Analizar HTML</button>
-      <button id="analyze-json">Analizar JSON</button>
-      <button id="export-json">JSON</button>
-      <button id="export-csv">CSV</button>
-      <button id="export-md">Markdown</button>
+      <button type="button" id="analyze-html">Analizar HTML</button>
+      <button type="button" id="analyze-json">Analizar JSON</button>
+      <button type="button" id="export-json">JSON</button>
+      <button type="button" id="export-csv">CSV</button>
+      <button type="button" id="export-md">Markdown</button>
     </div>
   </section>
 
-  <p id="status" class="status"></p>
+  <p id="status" class="status" role="status" aria-live="polite"></p>
 
   <main>
-    <section id="summary" class="panel active"></section>
-    <section id="all" class="panel">
+    <section id="summary" class="panel active" role="tabpanel" aria-labelledby="tab-summary"></section>
+    <section id="all" class="panel" role="tabpanel" aria-labelledby="tab-all" hidden>
+      <label class="visually-hidden" for="search">Buscar campos</label>
       <input type="search" id="search" placeholder="Buscar campos…" />
       <div id="fields"></div>
     </section>
-    <section id="map" class="panel"></section>
-    <section id="timeline" class="panel"></section>
+    <section id="map" class="panel" role="tabpanel" aria-labelledby="tab-map" hidden></section>
+    <section id="timeline" class="panel" role="tabpanel" aria-labelledby="tab-timeline" hidden></section>
   </main>
 
   <aside id="explain">

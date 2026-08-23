@@ -55,6 +55,12 @@ fn fallback_magic(data: &[u8]) -> (&'static str, &'static str) {
     if data.starts_with(&[0x1A, 0x45, 0xDF, 0xA3]) {
         return ("video/x-matroska", "EBML / Matroska / WebM");
     }
+    if data.starts_with(&[0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1]) {
+        return (
+            "application/vnd.ms-office",
+            "OLE Compound File (legacy Office)",
+        );
+    }
     if data.starts_with(b"%PDF-") {
         return ("application/pdf", "PDF");
     }
@@ -106,11 +112,20 @@ fn fallback_magic(data: &[u8]) -> (&'static str, &'static str) {
 fn classify_zip(data: &[u8]) -> (&'static str, &'static str) {
     let hay = String::from_utf8_lossy(&data[..data.len().min(4096)]);
     if hay.contains("word/") {
-        ("application/vnd.openxmlformats-officedocument.wordprocessingml.document", "DOCX")
+        (
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "DOCX",
+        )
     } else if hay.contains("xl/") {
-        ("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "XLSX")
+        (
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "XLSX",
+        )
     } else if hay.contains("ppt/") {
-        ("application/vnd.openxmlformats-officedocument.presentationml.presentation", "PPTX")
+        (
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            "PPTX",
+        )
     } else if hay.contains("META-INF/container.xml") || hay.contains("mimetypeapplication/epub") {
         ("application/epub+zip", "EPUB")
     } else if hay.contains("mimetypeapplication/vnd.oasis.opendocument") {
@@ -143,7 +158,9 @@ fn looks_like_mpeg_audio(data: &[u8]) -> bool {
 }
 
 fn looks_like_ttf(data: &[u8]) -> bool {
-    data.starts_with(&[0x00, 0x01, 0x00, 0x00]) || data.starts_with(b"OTTO") || data.starts_with(b"true")
+    data.starts_with(&[0x00, 0x01, 0x00, 0x00])
+        || data.starts_with(b"OTTO")
+        || data.starts_with(b"true")
 }
 
 fn looks_like_html(data: &[u8]) -> bool {
@@ -163,7 +180,8 @@ fn looks_like_xml(data: &[u8]) -> bool {
 
 fn looks_like_eml(data: &[u8]) -> bool {
     let s = String::from_utf8_lossy(&data[..data.len().min(800)]);
-    s.contains("From:") && (s.contains("Subject:") || s.contains("To:") || s.contains("MIME-Version:"))
+    s.contains("From:")
+        && (s.contains("Subject:") || s.contains("To:") || s.contains("MIME-Version:"))
 }
 
 fn is_mostly_text(data: &[u8]) -> bool {
@@ -244,6 +262,9 @@ pub fn mime_from_filename(name: &str) -> Option<&'static str> {
         "ods" => "application/vnd.oasis.opendocument.spreadsheet",
         "odp" => "application/vnd.oasis.opendocument.presentation",
         "rtf" => "application/rtf",
+        "doc" => "application/msword",
+        "xls" => "application/vnd.ms-excel",
+        "ppt" => "application/vnd.ms-powerpoint",
         "html" | "htm" => "text/html",
         "json" => "application/json",
         "xml" => "application/xml",

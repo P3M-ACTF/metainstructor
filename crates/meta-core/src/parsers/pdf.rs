@@ -17,11 +17,7 @@ pub fn parse_pdf(data: &[u8]) -> (Vec<Section>, Vec<String>) {
     let eof_count = data.windows(5).filter(|w| w == b"%%EOF").count();
     header.add("EofMarkers", eof_count.to_string(), Some("PDF"));
     if eof_count > 1 {
-        header.add(
-            "IncrementalUpdates",
-            "true",
-            Some("PDF"),
-        );
+        header.add("IncrementalUpdates", "true", Some("PDF"));
         warnings.push("PDF has multiple %%EOF markers (incremental updates)".into());
     }
     let has_js = contains_ci(data, b"/JavaScript") || contains_ci(data, b"/JS");
@@ -38,9 +34,9 @@ pub fn parse_pdf(data: &[u8]) -> (Vec<Section>, Vec<String>) {
                 if let Ok(Object::Dictionary(dict)) = doc.get_object(*id) {
                     for (k, v) in dict.iter() {
                         let key = String::from_utf8_lossy(k).into_owned();
-                        info_sec.fields.push(
-                            Field::new(key, object_to_string(v)).with_namespace("PDF:Info"),
-                        );
+                        info_sec
+                            .fields
+                            .push(Field::new(key, object_to_string(v)).with_namespace("PDF:Info"));
                     }
                 }
             }
@@ -56,7 +52,9 @@ pub fn parse_pdf(data: &[u8]) -> (Vec<Section>, Vec<String>) {
             }
             sections.push(xref);
 
-            if let Some(xml) = extract_xmp_from_doc(&doc).or_else(|| xmp::extract_xmp_from_bytes(data)) {
+            if let Some(xml) =
+                extract_xmp_from_doc(&doc).or_else(|| xmp::extract_xmp_from_bytes(data))
+            {
                 let sec = xmp::parse_xmp(&xml, "XMP:PDF");
                 if !sec.is_empty() {
                     sections.push(sec);

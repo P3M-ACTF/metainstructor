@@ -26,9 +26,9 @@ pub fn parse_xmp(xml: &str, namespace: &str) -> Section {
                         continue;
                     }
                     let key = format!("{}@{}", local, local_name(&an));
-                    section.fields.push(
-                        Field::new(key, av).with_namespace(namespace),
-                    );
+                    section
+                        .fields
+                        .push(Field::new(key, av).with_namespace(namespace));
                 }
                 path.push(local);
             }

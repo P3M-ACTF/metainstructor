@@ -61,6 +61,17 @@ aside h2 { font-size: 1rem; }
 .bars { display: flex; height: 10px; border-radius: 6px; overflow: hidden; margin: 0.6rem 0; }
 .bars span { display: block; }
 .story { color: var(--muted); }
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 @media (max-width: 900px) {
   body { grid-template-columns: 1fr; }
   aside { grid-column: 1; grid-row: auto; }

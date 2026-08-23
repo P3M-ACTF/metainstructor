@@ -15,7 +15,7 @@ pub fn parse_iptc_iim(data: &[u8], base_offset: u64) -> Section {
         let mut hdr = 5;
         if data[i + 3] & 0x80 != 0 {
             // extended length
-            let n = (len & 0x7FFF) as usize;
+            let n = len & 0x7FFF;
             if i + 5 + n > data.len() {
                 break;
             }
@@ -63,7 +63,8 @@ pub fn parse_photoshop_irb(data: &[u8], base_offset: u64) -> (Vec<Section>, Vec<
         if padded + 4 > data.len() {
             break;
         }
-        let size = u32::from_be_bytes(data[padded..padded + 4].try_into().unwrap_or([0; 4])) as usize;
+        let size =
+            u32::from_be_bytes(data[padded..padded + 4].try_into().unwrap_or([0; 4])) as usize;
         let data_start = padded + 4;
         let data_end = (data_start + size).min(data.len());
         let payload = &data[data_start..data_end];
@@ -80,9 +81,12 @@ pub fn parse_photoshop_irb(data: &[u8], base_offset: u64) -> (Vec<Section>, Vec<
                 irb_name(resid).to_string()
             };
             sec.fields.push(
-                Field::new(format!("Resource_0x{resid:04X}"), format!("{} ({} bytes)", name, size))
-                    .with_namespace("Photoshop:IRB")
-                    .with_span(base_offset + i as u64, (data_end - i) as u64),
+                Field::new(
+                    format!("Resource_0x{resid:04X}"),
+                    format!("{} ({} bytes)", name, size),
+                )
+                .with_namespace("Photoshop:IRB")
+                .with_span(base_offset + i as u64, (data_end - i) as u64),
             );
             if !sec.is_empty() {
                 sections.push(sec);

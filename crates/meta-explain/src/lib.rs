@@ -17,7 +17,7 @@ pub const GLOSSARY: &[GlossaryEntry] = &[
         body_en: "DateTimeOriginal is when the sensor captured the photo. DateTimeDigitized is conversion time. IFD0 DateTime is often last file change. Conflicts can indicate edits or copies.",
     },
     GlossaryEntry {
-        keys: &["GPSLatitude", "GPSLongitude", "GPSAltitude", "GPSMapDatum"],
+        keys: &["GPSLatitude", "GPSLongitude", "GPSAltitude", "GPSMapDatum", "GPSLatitudeRef", "GPSLongitudeRef", "GPSAltitudeRef"],
         title_es: "GPS",
         title_en: "GPS",
         body_es: "Coordenadas del receptor, no siempre del lugar real (pueden clonarse). El datum (WGS-84) define el elipsoide. AltitudeRef 0 = sobre el nivel del mar.",
@@ -59,7 +59,7 @@ pub const GLOSSARY: &[GlossaryEntry] = &[
         body_en: "EXIF size can differ from real pixels (JPEG SOF / PNG IHDR). That mismatch is a classic re-edit anomaly.",
     },
     GlossaryEntry {
-        keys: &["ExposureTime", "FNumber", "PhotographicSensitivity", "ISO", "FocalLength", "Flash"],
+        keys: &["ExposureTime", "FNumber", "PhotographicSensitivity", "ISO", "ISOSpeedRatings", "FocalLength", "Flash"],
         title_es: "Exposición",
         title_en: "Exposure",
         body_es: "Triángulo de exposición y focal. Valores imposibles para el modelo declarado merecen revisión.",
@@ -94,7 +94,7 @@ pub const GLOSSARY: &[GlossaryEntry] = &[
         body_en: "MP4 mvhd dates start at 1904-01-01 (Mac epoch). They may disagree with filesystem times.",
     },
     GlossaryEntry {
-        keys: &["og:title", "twitter:card", "canonical"],
+        keys: &["og:title", "og:image", "og:description", "twitter:card", "twitter:image", "canonical", "dc.creator"],
         title_es: "Metadatos web",
         title_en: "Web metadata",
         body_es: "Open Graph y Twitter Cards describen cómo se comparte un enlace. canonical indica la URL preferida.",
@@ -108,6 +108,34 @@ pub const GLOSSARY: &[GlossaryEntry] = &[
         body_en: "Fingerprints of the whole file. Prefer SHA-256 and BLAKE3 for inventories.",
     },
     GlossaryEntry {
+        keys: &["Copyright", "CopyrightNotice", "rights"],
+        title_es: "Copyright",
+        title_en: "Copyright",
+        body_es: "Texto de derechos incrustado. No equivale a un registro legal; se puede reescribir al exportar.",
+        body_en: "Embedded rights text. Not a legal registration; exporters often rewrite it.",
+    },
+    GlossaryEntry {
+        keys: &["XResolution", "YResolution", "ResolutionUnit"],
+        title_es: "Resolución",
+        title_en: "Resolution",
+        body_es: "Píxeles por pulgada/cm para impresión. No cambia el recuento de píxeles reales.",
+        body_en: "Pixels per inch/cm for print. Does not change the real pixel count.",
+    },
+    GlossaryEntry {
+        keys: &["ColorSpace", "ComponentsConfiguration"],
+        title_es: "Color",
+        title_en: "Color",
+        body_es: "ColorSpace 1 = sRGB. Un valor distinto o ausente complica la reproducción de color.",
+        body_en: "ColorSpace 1 = sRGB. Other or missing values complicate color reproduction.",
+    },
+    GlossaryEntry {
+        keys: &["og:image", "og:description", "twitter:image", "dc.creator", "Description@CreatorTool"],
+        title_es: "Web / XMP aliases",
+        title_en: "Web / XMP aliases",
+        body_es: "Claves OG/Twitter y atributos XMP (p. ej. Description@CreatorTool) describen cómo se comparte o etiquetó el objeto.",
+        body_en: "OG/Twitter keys and XMP attributes describe how the object is shared or labeled.",
+    },
+    GlossaryEntry {
         keys: &["Entropy"],
         title_es: "Entropía",
         title_en: "Entropy",
@@ -117,9 +145,15 @@ pub const GLOSSARY: &[GlossaryEntry] = &[
 ];
 
 pub fn explanation_for(key: &str) -> Option<(String, String)> {
-    let k = key.rsplit([':', '.', '/']).next().unwrap_or(key);
+    let k = key.rsplit([':', '.', '/', '@']).next().unwrap_or(key);
     for e in GLOSSARY {
-        if e.keys.iter().any(|cand| cand.eq_ignore_ascii_case(k) || cand.eq_ignore_ascii_case(key)) {
+        if e.keys.iter().any(|cand| {
+            let c = cand.rsplit([':', '.', '/', '@']).next().unwrap_or(cand);
+            cand.eq_ignore_ascii_case(k)
+                || cand.eq_ignore_ascii_case(key)
+                || c.eq_ignore_ascii_case(k)
+                || key.eq_ignore_ascii_case(cand)
+        }) {
             return Some((
                 format!("{} / {}", e.title_es, e.title_en),
                 format!("{}\n\n{}", e.body_es, e.body_en),
@@ -167,4 +201,17 @@ pub fn glossary_json() -> serde_json::Value {
             })
         })
         .collect::<Vec<_>>())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn aliases_match_xmp_and_web_keys() {
+        assert!(explanation_for("Description@CreatorTool").is_some());
+        assert!(explanation_for("dc.creator").is_some());
+        assert!(explanation_for("ISOSpeedRatings").is_some());
+        assert!(explanation_for("GPSLatitudeRef").is_some());
+    }
 }

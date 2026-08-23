@@ -35,7 +35,10 @@ pub fn parse_audio(data: &[u8]) -> (Vec<Section>, Vec<String>) {
             }
             fmt.add(
                 "OverallBitrate",
-                props.overall_bitrate().map(|v| v.to_string()).unwrap_or_default(),
+                props
+                    .overall_bitrate()
+                    .map(|v| v.to_string())
+                    .unwrap_or_default(),
                 Some("Audio"),
             );
             if !fmt.is_empty() {
@@ -102,17 +105,9 @@ pub fn parse_audio(data: &[u8]) -> (Vec<Section>, Vec<String>) {
     if data.starts_with(b"ID3") {
         let mut raw = Section::new("id3-header", "ID3 header");
         if data.len() >= 10 {
-            raw.add(
-                "Version",
-                format!("2.{}.{}", data[3], data[4]),
-                Some("ID3"),
-            );
+            raw.add("Version", format!("2.{}.{}", data[3], data[4]), Some("ID3"));
             raw.add("Flags", format!("0x{:02X}", data[5]), Some("ID3"));
-            raw.add(
-                "Size",
-                synchsafe(&data[6..10]).to_string(),
-                Some("ID3"),
-            );
+            raw.add("Size", synchsafe(&data[6..10]).to_string(), Some("ID3"));
         }
         sections.insert(0, raw);
     }

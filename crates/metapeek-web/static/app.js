@@ -4,12 +4,38 @@ let glossary = [];
 const $ = (id) => document.getElementById(id);
 const status = (m) => { $("status").textContent = m || ""; };
 
-document.querySelectorAll("nav button").forEach((b) => {
-  b.addEventListener("click", () => {
-    document.querySelectorAll("nav button").forEach((x) => x.classList.remove("active"));
-    document.querySelectorAll(".panel").forEach((x) => x.classList.remove("active"));
-    b.classList.add("active");
-    $(b.dataset.tab).classList.add("active");
+const tabs = [...document.querySelectorAll("nav [role=tab]")];
+function activateTab(btn) {
+  tabs.forEach((x) => {
+    const on = x === btn;
+    x.classList.toggle("active", on);
+    x.setAttribute("aria-selected", on ? "true" : "false");
+    x.tabIndex = on ? 0 : -1;
+  });
+  document.querySelectorAll(".panel").forEach((p) => {
+    const on = p.id === btn.dataset.tab;
+    p.classList.toggle("active", on);
+    p.hidden = !on;
+  });
+  btn.focus();
+}
+tabs.forEach((b) => {
+  b.addEventListener("click", () => activateTab(b));
+  b.addEventListener("keydown", (e) => {
+    const i = tabs.indexOf(b);
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      activateTab(tabs[(i + 1) % tabs.length]);
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      activateTab(tabs[(i - 1 + tabs.length) % tabs.length]);
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      activateTab(tabs[0]);
+    } else if (e.key === "End") {
+      e.preventDefault();
+      activateTab(tabs[tabs.length - 1]);
+    }
   });
 });
 
@@ -74,7 +100,7 @@ function show(a) {
   status((a.filename || a.mime) + " · " + n + " campos · " + a.size + " bytes");
   renderSummary();
   renderFields();
-  renderMap();
+  renderMap(false);
   renderTimeline();
 }
 
@@ -183,31 +209,53 @@ function parseCoord(value, ref) {
   return n;
 }
 
-function renderMap() {
+function renderMap(loadExternal) {
   const gps = analysis && findGps();
   if (!gps) {
     $("map").innerHTML = "<p class='story'>No hay coordenadas GPS en este archivo.</p>";
     return;
   }
+  let html = `<p>${gps.lat.toFixed(6)}, ${gps.lon.toFixed(6)}</p>
+    <p class="story">Las coordenadas no se envían a ningún servidor hasta que cargas el mapa.</p>`;
+  if (!loadExternal) {
+    html += `<p><button type="button" id="load-map">Cargar mapa externo (OpenStreetMap)</button></p>`;
+    $("map").innerHTML = html;
+    $("load-map")?.addEventListener("click", () => renderMap(true));
+    return;
+  }
   const delta = 0.01;
   const bbox = [gps.lon - delta, gps.lat - delta, gps.lon + delta, gps.lat + delta].join(",");
-  $("map").innerHTML = `
-    <p>${gps.lat.toFixed(6)}, ${gps.lon.toFixed(6)}</p>
+  html += `
     <iframe title="map" style="width:100%;height:360px;border:0;border-radius:10px"
       src="https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${gps.lat}%2C${gps.lon}"></iframe>
-    <p><a href="https://www.openstreetmap.org/?mlat=${gps.lat}&mlon=${gps.lon}#map=16/${gps.lat}/${gps.lon}" target="_blank" rel="noreferrer">Abrir en OpenStreetMap</a></p>
-  `;
+    <p><a href="https://www.openstreetmap.org/?mlat=${gps.lat}&mlon=${gps.lon}#map=16/${gps.lat}/${gps.lon}" target="_blank" rel="noreferrer">Abrir en OpenStreetMap</a></p>`;
+  $("map").innerHTML = html;
 }
 
 function collectDates() {
+  const skip = /(timescale|duration|bitrate|sample|offsettime|exposuretime|shutterspeed)/i;
   const re = /(date|time|created|modified|timestamp|mtime|ctime)/i;
   const out = [];
   for (const { section, field } of allFields()) {
+    if (skip.test(field.key)) continue;
     if (re.test(field.key) || re.test(field.label)) {
-      out.push({ when: field.value, label: field.key, source: section.label });
+      const parsed = Date.parse(normalizeDate(field.value));
+      out.push({
+        when: field.value,
+        sort: Number.isNaN(parsed) ? null : parsed,
+        label: field.key,
+        source: section.label,
+      });
     }
   }
+  out.sort((a, b) => (a.sort ?? 1e15) - (b.sort ?? 1e15));
   return out;
+}
+
+function normalizeDate(v) {
+  const exif = v.match(/^(\d{4}):(\d{2}):(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/);
+  if (exif) return `${exif[1]}-${exif[2]}-${exif[3]}T${exif[4]}:${exif[5]}:${exif[6]}`;
+  return v;
 }
 
 function renderTimeline() {

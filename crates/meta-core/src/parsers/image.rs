@@ -24,7 +24,8 @@ pub fn parse_image(data: &[u8], mime: &str) -> (Vec<Section>, Vec<String>) {
     if mime.contains("gif") || data.starts_with(b"GIF8") {
         return parse_gif(data);
     }
-    if mime.contains("webp") || (data.len() >= 12 && data.starts_with(b"RIFF") && &data[8..12] == b"WEBP")
+    if mime.contains("webp")
+        || (data.len() >= 12 && data.starts_with(b"RIFF") && &data[8..12] == b"WEBP")
     {
         return parse_webp(data);
     }
@@ -167,7 +168,10 @@ fn parse_webp(data: &[u8]) -> (Vec<Section>, Vec<String>) {
             "VP8 " if payload.len() >= 10 => {
                 let mut s = Section::new("webp-vp8", "WebP VP8");
                 // frame tag + start code
-                if payload.len() >= 10 && payload[3] == 0x9D && payload[4] == 0x01 && payload[5] == 0x2A
+                if payload.len() >= 10
+                    && payload[3] == 0x9D
+                    && payload[4] == 0x01
+                    && payload[5] == 0x2A
                 {
                     let w = u16::from_le_bytes([payload[6], payload[7]]) & 0x3FFF;
                     let h = u16::from_le_bytes([payload[8], payload[9]]) & 0x3FFF;
@@ -255,7 +259,11 @@ fn parse_ico(data: &[u8]) -> (Vec<Section>, Vec<String>) {
         if off + 16 > data.len() {
             break;
         }
-        let w = if data[off] == 0 { 256 } else { data[off] as u16 };
+        let w = if data[off] == 0 {
+            256
+        } else {
+            data[off] as u16
+        };
         let h = if data[off + 1] == 0 {
             256
         } else {
@@ -292,7 +300,7 @@ fn parse_isobmff_image(data: &[u8], mime: &str) -> (Vec<Section>, Vec<String>) {
         sections.extend(parsed.sections);
     } else {
         warnings.push(
-            "HEIC/AVIF: full box tree parsed without libheif. Embedded EXIF extracted when present. Enable optional feature `heif` only if you ship a decoder.".into(),
+            "HEIC/AVIF: no item/iloc tree and no pixel decode (libheif is optional and off by default). Only brands and a raw EXIF/XMP scan are shown.".into(),
         );
     }
     if let Some(xml) = xmp::extract_xmp_from_bytes(data) {

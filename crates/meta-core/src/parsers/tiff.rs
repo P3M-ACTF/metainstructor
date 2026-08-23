@@ -69,7 +69,8 @@ pub fn parse_tiff(data: &[u8], base_offset: u64) -> ParsedTiff {
         b"II" => true,
         b"MM" => false,
         _ => {
-            out.warnings.push("Not a TIFF header (missing II/MM)".into());
+            out.warnings
+                .push("Not a TIFF header (missing II/MM)".into());
             return out;
         }
     };
@@ -151,7 +152,10 @@ fn walk_ifd(
             (ptr, &data[ptr..end])
         };
 
-        if matches!(tag, TAG_EXIF_IFD | TAG_GPS_IFD | TAG_INTEROP_IFD | TAG_SUB_IFD) {
+        if matches!(
+            tag,
+            TAG_EXIF_IFD | TAG_GPS_IFD | TAG_INTEROP_IFD | TAG_SUB_IFD
+        ) {
             if let Some(ptr) = pointer_value(en, typ, inline, val_bytes) {
                 child_ifds.push((tag, ptr));
             }
@@ -185,7 +189,17 @@ fn walk_ifd(
             TAG_SUB_IFD => ("EXIF:SubIFD", "EXIF SubIFD / Thumbnail"),
             _ => ("EXIF:IFD", "EXIF IFD"),
         };
-        walk_ifd(data, en, ptr, base_offset, cns, clabel, depth + 1, out, seen);
+        walk_ifd(
+            data,
+            en,
+            ptr,
+            base_offset,
+            cns,
+            clabel,
+            depth + 1,
+            out,
+            seen,
+        );
     }
 
     if next_off_pos + 4 <= data.len() {
@@ -250,7 +264,11 @@ fn format_value(tag: u16, typ: u16, count: u32, bytes: &[u8], en: Endian) -> Str
                     .collect::<Vec<_>>()
                     .join(" ")
             } else {
-                format!("{} bytes: {}…", count, hex::encode(&bytes[..16.min(bytes.len())]))
+                format!(
+                    "{} bytes: {}…",
+                    count,
+                    hex::encode(&bytes[..16.min(bytes.len())])
+                )
             }
         }
         TYPE_SHORT => join_nums(count, 2, bytes, |c| en.u16(c).map(|v| v.to_string())),
@@ -534,7 +552,9 @@ fn gps_tag(tag: u16) -> Option<&'static str> {
 }
 
 pub fn extract_gps_decimal(sections: &[Section]) -> Option<(f64, f64)> {
-    let gps = sections.iter().find(|s| s.id.contains("gps") || s.label.contains("GPS"))?;
+    let gps = sections
+        .iter()
+        .find(|s| s.id.contains("gps") || s.label.contains("GPS"))?;
     let lat = parse_coord(field_val(gps, "GPSLatitude")?)?;
     let lon = parse_coord(field_val(gps, "GPSLongitude")?)?;
     let lat_ref = field_val(gps, "GPSLatitudeRef").unwrap_or("N");

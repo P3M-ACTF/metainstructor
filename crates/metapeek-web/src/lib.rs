@@ -36,6 +36,11 @@ pub fn is_headless() -> bool {
 }
 
 pub async fn serve(host: &str, port: u16, open: bool) -> anyhow::Result<()> {
+    if host == "0.0.0.0" || host == "::" || host == "[::]" {
+        eprintln!(
+            "WARNING: binding to {host} exposes the analyzer on the network with no authentication."
+        );
+    }
     let app = router();
     let addr: SocketAddr = format!("{host}:{port}").parse()?;
     let listener = tokio::net::TcpListener::bind(addr).await?;
@@ -113,7 +118,7 @@ async fn glossary() -> Json<serde_json::Value> {
 }
 
 async fn analyze_upload(mut multipart: Multipart) -> Result<Json<serde_json::Value>, AppError> {
-    while let Some(field) = multipart.next_field().await.map_err(AppError::bad)? {
+    if let Some(field) = multipart.next_field().await.map_err(AppError::bad)? {
         let name = field.file_name().unwrap_or("upload").to_string();
         let data = field.bytes().await.map_err(AppError::bad)?;
         let mut analysis = analyze_buffer(&data, AnalyzeOptions::from_filename(name));
@@ -177,10 +182,6 @@ impl AppError {
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        (
-            self.status,
-            Json(serde_json::json!({ "error": self.msg })),
-        )
-            .into_response()
+        (self.status, Json(serde_json::json!({ "error": self.msg }))).into_response()
     }
 }

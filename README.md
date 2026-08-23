@@ -2,7 +2,7 @@
 
 Análisis **local y exhaustivo** de metadatos. Un único binario nativo por sistema operativo: CLI + interfaz web embebida. Sin Node, sin pnpm, sin Execution Policy.
 
-MetaPeek extrae **todas** las etiquetas que el parser lee (EXIF IFD completos, XMP, IPTC, PNG, audio, vídeo, PDF, Office, HTML/JSON-LD, ZIP/EPUB, fuentes, EML). No hay lista blanca de 16 campos.
+MetaPeek extrae **todas las etiquetas que cada parser lee** (sin lista blanca de 16 campos). No es un volcado ExifTool de todos los MakerNotes ni un decodificador HEIC.
 
 [English below](#english)
 
@@ -107,15 +107,16 @@ metapeek serve [--port 5173] [--open]
 
 | Familia | Extensiones | Qué se obtiene |
 |---------|-------------|----------------|
-| Imagen | JPEG, TIFF, PNG, WebP, GIF, BMP, ICO, AVIF, HEIC* | Todos los IFD EXIF, XMP, IPTC/IIM, ICC, chunks PNG, comentarios GIF, dimensiones reales |
+| Imagen | JPEG, TIFF, PNG, WebP, GIF, BMP, ICO | IFD EXIF, XMP, IPTC/IIM, chunks PNG, comentarios GIF, dimensiones reales. MakerNote e ICC profundo no se expanden. |
+| HEIC/AVIF | heic, avif | Marcas ISO-BMFF + EXIF/XMP embebido si aparece. Sin árbol item/iloc ni decodificar píxeles. |
 | Audio | MP3, FLAC, OGG, M4A, WAV, AIFF | ID3v1/v2, Vorbis, ilst, bitrate, canales |
-| Vídeo | MP4, MOV, MKV, WebM, AVI | Átomos/tracks, duración, codecs, creation_time, handler |
-| Docs | PDF, DOCX/XLSX/PPTX, ODT, RTF | Info + XMP; core.xml/app.xml/custom.xml; meta ODF |
+| Vídeo | MP4, MOV, MKV, WebM, AVI | Átomos/elementos recorridos, duración/codecs cuando el contenedor los expone |
+| Docs | PDF, DOCX/XLSX/PPTX, ODT, RTF | Info + XMP; XML de OOXML/ODF. `.doc/.xls/.ppt` OLE se detecta, no se parsea. |
 | Web | HTML, JSON | `<meta>`, OG, Twitter, Dublin Core, JSON-LD, `link[rel]` |
 | Otros | ZIP, EPUB, TTF/OTF, EML | Comentario ZIP, OPF, name table, cabeceras |
 | Siempre | cualquier archivo | magic, MIME, tamaño, MD5/SHA-1/256/512/BLAKE3, entropía, fechas FS |
 
-\* HEIC sin `libheif`: magic + EXIF/XMP embebido. Feature opcional `heif` no entra en Termux/musl.
+Fetch de URL: DNS e IPs privadas se bloquean **antes** de conectar; redirects se revalidan; tope 50 MB en streaming.
 
 ## Privacidad
 
@@ -144,7 +145,7 @@ MIT — [LICENSE](./LICENSE)
 
 **Local, exhaustive metadata analysis.** One native binary per OS: CLI + embedded web UI. No Node, no pnpm, no Execution Policy.
 
-Every parsed tag is shown. There is no 16-field whitelist.
+Every tag **the parser actually reads** is shown. There is no 16-field whitelist. MakerNotes, deep ICC, incremental PDF objects, HEIC item/iloc, and OLE `.doc` bodies are out of scope until a real parser exists.
 
 ### Windows
 

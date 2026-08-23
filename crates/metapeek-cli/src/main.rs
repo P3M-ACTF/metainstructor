@@ -3,7 +3,7 @@ use clap::{Parser, Subcommand, ValueEnum};
 use meta_core::export::{to_csv, to_json, to_markdown};
 use meta_core::{analyze_html_string, analyze_json_string, analyze_path, AnalyzeOptions};
 use meta_explain::apply_explanations;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(Parser)]
 #[command(
@@ -73,18 +73,31 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
     match cli.command {
         Some(Command::Serve { host, port, open }) => {
+            warn_bind(&host);
             metapeek_web::serve(&host, port, open).await?;
         }
         Some(Command::Analyze { path, format }) => print_analysis_path(&path, format)?,
         Some(Command::Html { file, format }) => {
+            let name = file
+                .as_ref()
+                .and_then(|p| p.file_name())
+                .and_then(|s| s.to_str())
+                .map(|s| s.to_string())
+                .or_else(|| Some("stdin.html".into()));
             let html = read_or_stdin(file)?;
-            let mut a = analyze_html_string(&html, Some("stdin.html".into()));
+            let mut a = analyze_html_string(&html, name);
             apply_explanations(&mut a);
             print_analysis(&a, format)?;
         }
         Some(Command::Json { file, format }) => {
+            let name = file
+                .as_ref()
+                .and_then(|p| p.file_name())
+                .and_then(|s| s.to_str())
+                .map(|s| s.to_string())
+                .or_else(|| Some("stdin.json".into()));
             let json = read_or_stdin(file)?;
-            let mut a = analyze_json_string(&json, Some("stdin.json".into()));
+            let mut a = analyze_json_string(&json, name);
             apply_explanations(&mut a);
             print_analysis(&a, format)?;
         }
@@ -103,7 +116,7 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-fn print_analysis_path(path: &PathBuf, format: OutputFormat) -> Result<()> {
+fn print_analysis_path(path: &Path, format: OutputFormat) -> Result<()> {
     let mut a = analyze_path(path)?;
     apply_explanations(&mut a);
     print_analysis(&a, format)
@@ -127,20 +140,13 @@ fn print_table(a: &meta_core::Analysis) {
         a.size,
         a.entropy
     );
-    println!(
-        "SHA-256 {}  MD5 {}",
-        a.hashes.sha256, a.hashes.md5
-    );
+    println!("SHA-256 {}  MD5 {}", a.hashes.sha256, a.hashes.md5);
     println!();
     for sec in &a.sections {
         println!("── {} ──", sec.label);
         for f in &sec.fields {
             let ns = f.namespace.as_deref().unwrap_or("");
-            let val = if f.value.len() > 120 {
-                format!("{}…", &f.value[..120])
-            } else {
-                f.value.clone()
-            };
+            let val = meta_core::truncate_chars(&f.value, 120);
             if ns.is_empty() {
                 println!("  {:28} {}", f.key, val);
             } else {
@@ -156,6 +162,14 @@ fn print_table(a: &meta_core::Analysis) {
         }
     }
     let _ = AnalyzeOptions::default();
+}
+
+fn warn_bind(host: &str) {
+    if host == "0.0.0.0" || host == "::" || host == "[::]" {
+        eprintln!(
+            "WARNING: binding to {host} exposes the analyzer on the network with no authentication."
+        );
+    }
 }
 
 fn read_or_stdin(file: Option<PathBuf>) -> Result<String> {

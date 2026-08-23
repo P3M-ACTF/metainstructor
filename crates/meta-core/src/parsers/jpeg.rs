@@ -72,17 +72,15 @@ pub fn parse_jpeg(data: &[u8]) -> JpegParse {
         let payload_start = i + 2;
         let payload_end = (i + seglen).min(data.len());
         if payload_end < payload_start {
-            out.warnings.push(format!("Invalid JPEG segment length at {start}"));
+            out.warnings
+                .push(format!("Invalid JPEG segment length at {start}"));
             break;
         }
         let payload = &data[payload_start..payload_end];
         markers.fields.push(
-            Field::new(
-                marker_name(marker),
-                format!("{} bytes", payload.len()),
-            )
-            .with_namespace("JPEG")
-            .with_span(start as u64, (payload_end - start) as u64),
+            Field::new(marker_name(marker), format!("{} bytes", payload.len()))
+                .with_namespace("JPEG")
+                .with_span(start as u64, (payload_end - start) as u64),
         );
 
         match marker {
@@ -94,9 +92,14 @@ pub fn parse_jpeg(data: &[u8]) -> JpegParse {
             0xFE => {
                 let mut com = Section::new("jpeg-comment", "JPEG comment");
                 com.fields.push(
-                    Field::new("Comment", String::from_utf8_lossy(payload).trim_end_matches('\0').to_string())
-                        .with_namespace("JPEG:COM")
-                        .with_span(payload_start as u64, payload.len() as u64),
+                    Field::new(
+                        "Comment",
+                        String::from_utf8_lossy(payload)
+                            .trim_end_matches('\0')
+                            .to_string(),
+                    )
+                    .with_namespace("JPEG:COM")
+                    .with_span(payload_start as u64, payload.len() as u64),
                 );
                 out.sections.push(com);
             }
@@ -163,9 +166,9 @@ fn supplement_kamadak(app1_payload: &[u8], out: &mut JpegParse) {
                 continue;
             }
             let value = f.display_value().with_unit(f).to_string();
-            extra.fields.push(
-                Field::new(key, value).with_namespace(&format!("EXIF:{:?}", f.ifd_num)),
-            );
+            extra
+                .fields
+                .push(Field::new(key, value).with_namespace(format!("EXIF:{:?}", f.ifd_num)));
         }
         if !extra.is_empty() {
             out.sections.push(extra);
@@ -210,7 +213,8 @@ fn parse_app13(payload: &[u8], payload_offset: u64, out: &mut JpegParse) {
     } else {
         payload
     };
-    let (secs, warns) = iptc::parse_photoshop_irb(rest, payload_offset + (payload.len() - rest.len()) as u64);
+    let (secs, warns) =
+        iptc::parse_photoshop_irb(rest, payload_offset + (payload.len() - rest.len()) as u64);
     out.sections.extend(secs);
     out.warnings.extend(warns);
 }
@@ -238,11 +242,7 @@ fn parse_jfif(payload: &[u8], out: &mut JpegParse) {
 fn parse_app14(payload: &[u8], out: &mut JpegParse) {
     if payload.starts_with(b"Adobe") && payload.len() >= 12 {
         let mut sec = Section::new("adobe-app14", "Adobe APP14");
-        sec.add(
-            "Transform",
-            payload[11].to_string(),
-            Some("JPEG:APP14"),
-        );
+        sec.add("Transform", payload[11].to_string(), Some("JPEG:APP14"));
         out.sections.push(sec);
     }
 }

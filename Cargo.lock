@@ -1284,7 +1284,6 @@ dependencies = [
  "flate2",
  "hex",
  "infer",
- "ipnet",
  "kamadak-exif",
  "lofty",
  "lopdf",
@@ -1336,7 +1335,6 @@ dependencies = [
  "serde",
  "serde_json",
  "tokio",
- "tower-http",
  "webbrowser",
 ]
 

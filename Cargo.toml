@@ -19,7 +19,7 @@ edition = "2021"
 license = "MIT"
 repository = "https://github.com/P3M-ACTF/metapeek"
 authors = ["MetaPeek Contributors"]
-rust-version = "1.74"
+rust-version = "1.80"
 description = "Local, exhaustive metadata analysis — educational and private by default."
 
 [workspace.dependencies]
