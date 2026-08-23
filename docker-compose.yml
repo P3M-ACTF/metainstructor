@@ -1,0 +1,13 @@
+services:
+  metapeek-server:
+    build:
+      context: ..
+      dockerfile: metapeek/Dockerfile
+    ports:
+      - "8787:8787"
+    environment:
+      - PORT=8787
+      - MAX_FILE_SIZE=52428800
+      - ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+      - ENABLE_EXIFTOOL=true
+    restart: unless-stopped
