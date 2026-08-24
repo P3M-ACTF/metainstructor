@@ -21,39 +21,60 @@
   </header>
 
   <section class="intake">
-    <div id="drop" class="drop">
+    <div id="drop" class="drop" tabindex="0" role="button" aria-label="Arrastrar o elegir un archivo local">
       <strong>Arrastra un archivo</strong>
-      <span>o pega una URL / HTML / JSON</span>
+      <span>o haz clic para elegirlo del disco</span>
       <label class="visually-hidden" for="file">Archivo local</label>
-      <input type="file" id="file" />
+      <input type="file" id="file" class="visually-hidden" tabindex="-1" aria-hidden="true" />
     </div>
-    <div class="row">
-      <label class="visually-hidden" for="url">URL pública</label>
-      <input type="url" id="url" placeholder="https://…" />
-      <button type="button" id="fetch">Fetch local</button>
-    </div>
-    <label class="visually-hidden" for="paste">HTML o JSON</label>
-    <textarea id="paste" rows="4" placeholder="Pega HTML o JSON…"></textarea>
-    <div class="row">
-      <button type="button" id="analyze-html">Analizar HTML</button>
-      <button type="button" id="analyze-json">Analizar JSON</button>
-      <button type="button" id="export-json">JSON</button>
-      <button type="button" id="export-csv">CSV</button>
-      <button type="button" id="export-md">Markdown</button>
-    </div>
+    <details class="intake-more">
+      <summary>URL o pegar HTML / JSON</summary>
+      <div class="row">
+        <label class="visually-hidden" for="url">URL pública</label>
+        <input type="url" id="url" placeholder="https://…" autocomplete="off" />
+        <button type="button" id="fetch">Fetch local</button>
+      </div>
+      <label class="visually-hidden" for="paste">HTML o JSON</label>
+      <textarea id="paste" rows="4" placeholder="Pega HTML o JSON…"></textarea>
+      <div class="row">
+        <button type="button" id="analyze-html">Analizar HTML</button>
+        <button type="button" id="analyze-json">Analizar JSON</button>
+      </div>
+    </details>
   </section>
 
   <p id="status" class="status" role="status" aria-live="polite"></p>
 
   <main>
-    <section id="summary" class="panel active" role="tabpanel" aria-labelledby="tab-summary"></section>
-    <section id="all" class="panel" role="tabpanel" aria-labelledby="tab-all" hidden>
-      <label class="visually-hidden" for="search">Buscar campos</label>
-      <input type="search" id="search" placeholder="Buscar campos…" />
-      <div id="fields"></div>
+    <div id="file-bar" class="file-bar" hidden>
+      <div class="file-id">
+        <strong id="file-name">—</strong>
+        <div id="chips" class="chips"></div>
+      </div>
+      <div class="exports" role="group" aria-label="Exportar análisis">
+        <button type="button" id="export-json">JSON</button>
+        <button type="button" id="export-csv">CSV</button>
+        <button type="button" id="export-md">Markdown</button>
+      </div>
+    </div>
+    <div id="search-wrap" class="search-wrap" hidden>
+      <label class="visually-hidden" for="search">Filtrar campos y fechas</label>
+      <input type="search" id="search" placeholder="Filtrar campos, namespaces y fechas…" autocomplete="off" />
+    </div>
+    <section id="summary" class="panel active" role="tabpanel" aria-labelledby="tab-summary">
+      <p class="empty">Arrastra un archivo o elige uno del disco para ver su ficha.</p>
     </section>
-    <section id="map" class="panel" role="tabpanel" aria-labelledby="tab-map" hidden></section>
-    <section id="timeline" class="panel" role="tabpanel" aria-labelledby="tab-timeline" hidden></section>
+    <section id="all" class="panel" role="tabpanel" aria-labelledby="tab-all" hidden>
+      <div id="fields">
+        <p class="empty">Los campos aparecerán aquí agrupados por sección.</p>
+      </div>
+    </section>
+    <section id="map" class="panel" role="tabpanel" aria-labelledby="tab-map" hidden>
+      <p class="empty">Si el archivo tiene GPS, las coordenadas se mostrarán aquí.</p>
+    </section>
+    <section id="timeline" class="panel" role="tabpanel" aria-labelledby="tab-timeline" hidden>
+      <p class="empty">Las fechas detectadas se ordenarán en un rail vertical.</p>
+    </section>
   </main>
 
   <aside id="explain">
