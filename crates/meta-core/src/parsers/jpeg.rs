@@ -103,22 +103,22 @@ pub fn parse_jpeg(data: &[u8]) -> JpegParse {
                 );
                 out.sections.push(com);
             }
-            0xC0..=0xCF if marker != 0xC4 && marker != 0xC8 && marker != 0xCC => {
-                if payload.len() >= 6 {
-                    let bits = payload[0];
-                    let h = u16::from_be_bytes([payload[1], payload[2]]) as u32;
-                    let w = u16::from_be_bytes([payload[3], payload[4]]) as u32;
-                    let comps = payload[5];
-                    out.pixel_width = Some(w);
-                    out.pixel_height = Some(h);
-                    let mut sof = Section::new("jpeg-sof", "JPEG frame (SOF)");
-                    sof.add("BitsPerSample", bits.to_string(), Some("JPEG:SOF"));
-                    sof.add("Height", h.to_string(), Some("JPEG:SOF"));
-                    sof.add("Width", w.to_string(), Some("JPEG:SOF"));
-                    sof.add("Components", comps.to_string(), Some("JPEG:SOF"));
-                    sof.add("Marker", marker_name(marker), Some("JPEG:SOF"));
-                    out.sections.push(sof);
-                }
+            0xC0..=0xCF
+                if marker != 0xC4 && marker != 0xC8 && marker != 0xCC && payload.len() >= 6 =>
+            {
+                let bits = payload[0];
+                let h = u16::from_be_bytes([payload[1], payload[2]]) as u32;
+                let w = u16::from_be_bytes([payload[3], payload[4]]) as u32;
+                let comps = payload[5];
+                out.pixel_width = Some(w);
+                out.pixel_height = Some(h);
+                let mut sof = Section::new("jpeg-sof", "JPEG frame (SOF)");
+                sof.add("BitsPerSample", bits.to_string(), Some("JPEG:SOF"));
+                sof.add("Height", h.to_string(), Some("JPEG:SOF"));
+                sof.add("Width", w.to_string(), Some("JPEG:SOF"));
+                sof.add("Components", comps.to_string(), Some("JPEG:SOF"));
+                sof.add("Marker", marker_name(marker), Some("JPEG:SOF"));
+                out.sections.push(sof);
             }
             _ => {}
         }

@@ -11,6 +11,7 @@ pub mod pdf;
 pub mod png;
 pub mod tiff;
 pub mod video;
+mod xml_util;
 pub mod xmp;
 
 use crate::types::Section;

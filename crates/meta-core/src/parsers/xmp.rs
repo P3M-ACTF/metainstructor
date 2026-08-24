@@ -1,3 +1,4 @@
+use crate::parsers::xml_util::{attr_value, decode_text, general_ref_text};
 use crate::types::{Field, Section};
 use quick_xml::events::Event;
 use quick_xml::Reader;
@@ -10,18 +11,17 @@ pub fn parse_xmp(xml: &str, namespace: &str) -> Section {
     let mut reader = Reader::from_str(xml);
     reader.config_mut().trim_text(true);
     let mut path: Vec<String> = Vec::new();
+    let mut pending = String::new();
     let mut buf = Vec::new();
     loop {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Start(e)) | Ok(Event::Empty(e)) => {
+                flush_text(&mut pending, &path, &mut section, namespace);
                 let name = String::from_utf8_lossy(e.name().as_ref()).into_owned();
                 let local = local_name(&name);
                 for attr in e.attributes().flatten() {
                     let an = String::from_utf8_lossy(attr.key.as_ref()).into_owned();
-                    let av = attr
-                        .unescape_value()
-                        .map(|v| v.into_owned())
-                        .unwrap_or_default();
+                    let av = attr_value(&attr);
                     if av.trim().is_empty() {
                         continue;
                     }
@@ -32,20 +32,10 @@ pub fn parse_xmp(xml: &str, namespace: &str) -> Section {
                 }
                 path.push(local);
             }
-            Ok(Event::Text(t)) => {
-                if let Ok(text) = t.unescape() {
-                    let text = text.trim();
-                    if !text.is_empty() {
-                        let key = path.last().cloned().unwrap_or_else(|| "value".into());
-                        if !is_noise(&key) {
-                            section
-                                .fields
-                                .push(Field::new(key, text.to_string()).with_namespace(namespace));
-                        }
-                    }
-                }
-            }
+            Ok(Event::Text(t)) => pending.push_str(&decode_text(&t)),
+            Ok(Event::GeneralRef(r)) => pending.push_str(&general_ref_text(&r)),
             Ok(Event::End(_)) => {
+                flush_text(&mut pending, &path, &mut section, namespace);
                 path.pop();
             }
             Ok(Event::Eof) => break,
@@ -55,6 +45,20 @@ pub fn parse_xmp(xml: &str, namespace: &str) -> Section {
         buf.clear();
     }
     section
+}
+
+fn flush_text(pending: &mut String, path: &[String], section: &mut Section, namespace: &str) {
+    let text = pending.trim().to_string();
+    pending.clear();
+    if text.is_empty() {
+        return;
+    }
+    let key = path.last().cloned().unwrap_or_else(|| "value".into());
+    if !is_noise(&key) {
+        section
+            .fields
+            .push(Field::new(key, text).with_namespace(namespace));
+    }
 }
 
 pub fn extract_xmp_from_bytes(data: &[u8]) -> Option<String> {

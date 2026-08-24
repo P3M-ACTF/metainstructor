@@ -137,24 +137,24 @@ pub fn parse_zip_xml_package(data: &[u8]) -> (Vec<Section>, Vec<String>) {
 }
 
 fn flatten_xml(xml: &str, ns: &str, origin: &str) -> Section {
+    use crate::parsers::xml_util::{attr_value, decode_text, general_ref_text};
     use quick_xml::events::Event;
     use quick_xml::Reader;
     let mut section = Section::new("xml-meta", origin);
     let mut reader = Reader::from_str(xml);
     reader.config_mut().trim_text(true);
     let mut stack: Vec<String> = Vec::new();
+    let mut pending = String::new();
     let mut buf = Vec::new();
     loop {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Start(e)) => {
+                flush_office_text(&mut pending, &stack, &mut section, ns);
                 let name = String::from_utf8_lossy(e.name().as_ref()).into_owned();
                 let local = name.rsplit(':').next().unwrap_or(&name).to_string();
                 for attr in e.attributes().flatten() {
                     let an = String::from_utf8_lossy(attr.key.as_ref()).into_owned();
-                    let av = attr
-                        .unescape_value()
-                        .map(|v| v.into_owned())
-                        .unwrap_or_default();
+                    let av = attr_value(&attr);
                     if !av.is_empty() && !an.contains("xmlns") {
                         section.fields.push(
                             Field::new(
@@ -168,14 +168,12 @@ fn flatten_xml(xml: &str, ns: &str, origin: &str) -> Section {
                 stack.push(local);
             }
             Ok(Event::Empty(e)) => {
+                flush_office_text(&mut pending, &stack, &mut section, ns);
                 let name = String::from_utf8_lossy(e.name().as_ref()).into_owned();
                 let local = name.rsplit(':').next().unwrap_or(&name).to_string();
                 for attr in e.attributes().flatten() {
                     let an = String::from_utf8_lossy(attr.key.as_ref()).into_owned();
-                    let av = attr
-                        .unescape_value()
-                        .map(|v| v.into_owned())
-                        .unwrap_or_default();
+                    let av = attr_value(&attr);
                     if !av.is_empty() {
                         section.fields.push(
                             Field::new(
@@ -187,18 +185,10 @@ fn flatten_xml(xml: &str, ns: &str, origin: &str) -> Section {
                     }
                 }
             }
-            Ok(Event::Text(t)) => {
-                if let Ok(text) = t.unescape() {
-                    let text = text.trim();
-                    if !text.is_empty() {
-                        let key = stack.last().cloned().unwrap_or_else(|| "value".into());
-                        section
-                            .fields
-                            .push(Field::new(key, text.to_string()).with_namespace(ns));
-                    }
-                }
-            }
+            Ok(Event::Text(t)) => pending.push_str(&decode_text(&t)),
+            Ok(Event::GeneralRef(r)) => pending.push_str(&general_ref_text(&r)),
             Ok(Event::End(_)) => {
+                flush_office_text(&mut pending, &stack, &mut section, ns);
                 stack.pop();
             }
             Ok(Event::Eof) => break,
@@ -208,6 +198,18 @@ fn flatten_xml(xml: &str, ns: &str, origin: &str) -> Section {
         buf.clear();
     }
     section
+}
+
+fn flush_office_text(pending: &mut String, stack: &[String], section: &mut Section, ns: &str) {
+    let text = pending.trim().to_string();
+    pending.clear();
+    if text.is_empty() {
+        return;
+    }
+    let key = stack.last().cloned().unwrap_or_else(|| "value".into());
+    section
+        .fields
+        .push(Field::new(key, text).with_namespace(ns));
 }
 
 fn parse_rtf(data: &[u8]) -> (Vec<Section>, Vec<String>) {
