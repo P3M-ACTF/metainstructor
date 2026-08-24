@@ -14,7 +14,7 @@ default-members = [
 ]
 
 [workspace.package]
-version = "0.2.2"
+version = "0.2.3"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/P3M-ACTF/metapeek"
@@ -23,9 +23,9 @@ rust-version = "1.89"
 description = "Local, exhaustive metadata analysis — educational and private by default."
 
 [workspace.dependencies]
-meta-core = { path = "crates/meta-core", version = "0.2.2" }
-meta-explain = { path = "crates/meta-explain", version = "0.2.2" }
-metapeek-web = { path = "crates/metapeek-web", version = "0.2.2" }
+meta-core = { path = "crates/meta-core", version = "0.2.3" }
+meta-explain = { path = "crates/meta-explain", version = "0.2.3" }
+metapeek-web = { path = "crates/metapeek-web", version = "0.2.3" }
 anyhow = "1"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std", "serde"] }
 serde = { version = "1", features = ["derive"] }
