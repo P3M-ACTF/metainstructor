@@ -1,5 +1,9 @@
 ﻿# Changelog
 
+## 0.3.5
+
+- Pin **MetaDissect** to `v0.9.0` (rich C2PA actions, compact PNG chunks, CLI `--verbose` / `--sections`).
+
 ## 0.3.4
 
 - Pin **MetaDissect** to `v0.8.0` (crates.io metadata, JSON HTTP API `serve --api`).
