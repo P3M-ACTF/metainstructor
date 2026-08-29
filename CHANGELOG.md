@@ -1,5 +1,9 @@
 ﻿# Changelog
 
+## 0.3.6
+
+- Pin **MetaDissect** to `v0.10.0` (C2PA trust anchors, `extract`, ingredients section, compact C2PA warnings).
+
 ## 0.3.5
 
 - Pin **MetaDissect** to `v0.9.0` (rich C2PA actions, compact PNG chunks, CLI `--verbose` / `--sections`).
