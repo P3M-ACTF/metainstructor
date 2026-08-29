@@ -1,5 +1,9 @@
 ﻿# Changelog
 
+## 0.3.3
+
+- Pin **MetaDissect** to `v0.7.0` (WARC, Outlook MSG/MAPI subset, deeper MakerNotes).
+
 ## 0.3.2
 
 - Pin **MetaDissect** to `v0.6.0` (PE / ELF / Mach-O executable metadata).
