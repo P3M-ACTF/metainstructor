@@ -1,4 +1,8 @@
-# Changelog
+﻿# Changelog
+
+## 0.3.2
+
+- Pin **MetaDissect** to `v0.6.0` (PE / ELF / Mach-O executable metadata).
 
 ## 0.3.1
 

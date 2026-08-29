@@ -10,7 +10,7 @@ Metadata/
   metainstructor/
 ```
 
-`[patch."https://github.com/P3M-ACTF/metadissect"]` overrides the git tag with the sibling path. Without `../metadissect`, comment out `[patch]` and use tag `v0.5.0` (or newer).
+`[patch."https://github.com/P3M-ACTF/metadissect"]` overrides the git tag with the sibling path. Without `../metadissect`, comment out `[patch]` and use tag `v0.6.0` (or newer).
 
 ## Checks
 
