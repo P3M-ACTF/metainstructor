@@ -1,4 +1,4 @@
-﻿[package]
+[package]
 name = "metainstructor-web"
 version.workspace = true
 edition.workspace = true

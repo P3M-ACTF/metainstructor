@@ -1,4 +1,4 @@
-﻿[package]
+[package]
 name = "meta-explain"
 version.workspace = true
 edition.workspace = true
