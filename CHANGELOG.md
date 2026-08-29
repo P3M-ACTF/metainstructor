@@ -1,4 +1,8 @@
-# Changelog
+﻿# Changelog
+
+## 0.3.4
+
+- Pin **MetaDissect** to `v0.8.0` (crates.io metadata, JSON HTTP API `serve --api`).
 
 ## 0.3.3
 

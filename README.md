@@ -1,6 +1,6 @@
 # MetaInstructor
 
-Visor educativo de metadatos (CLI + UI web embebida). Binario: `metainstructor`. **Formerly MetaPeek.** Depende de [MetaDissect](https://github.com/P3M-ACTF/metadissect) (tag `v0.7.0` + `[patch]` local).
+Visor educativo de metadatos (CLI + UI web embebida). Binario: `metainstructor`. **Formerly MetaPeek.** Depende de [MetaDissect](https://github.com/P3M-ACTF/metadissect) (tag `v0.8.0` + `[patch]` local).
 
 Sin argumentos → UI en `http://127.0.0.1:5173`.
 

@@ -12,7 +12,7 @@ default-members = [
 ]
 
 [workspace.package]
-version = "0.3.0"
+version = "0.3.4"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/P3M-ACTF/metainstructor"
@@ -23,8 +23,8 @@ description = "Educational metadata viewer (web UI). Formerly MetaPeek."
 [workspace.dependencies]
 # Pinned MetaDissect tag. Local umbrella overrides via [patch] below.
 metadissect = { git = "https://github.com/P3M-ACTF/metadissect", tag = "v0.8.0" }
-meta-explain = { path = "crates/meta-explain", version = "0.3.0" }
-metainstructor-web = { path = "crates/metainstructor-web", version = "0.3.0" }
+meta-explain = { path = "crates/meta-explain", version = "0.3.4" }
+metainstructor-web = { path = "crates/metainstructor-web", version = "0.3.4" }
 anyhow = "1"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std", "serde"] }
 serde = { version = "1", features = ["derive"] }
