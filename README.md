@@ -1,12 +1,12 @@
-# MetaInstructor
+﻿# MetaInstructor
 
-Visor educativo de metadatos (CLI + UI web embebida). Binario: `metainstructor`. **Formerly MetaPeek.** Depende de [MetaDissect](https://github.com/P3M-ACTF/metadissect) (tag `v0.4.0` + `[patch]` local).
+Visor educativo de metadatos (CLI + UI web embebida). Binario: `metainstructor`. **Formerly MetaPeek.** Depende de [MetaDissect](https://github.com/P3M-ACTF/metadissect) (tag `v0.5.0` + `[patch]` local).
 
-Sin argumentos → UI en `http://127.0.0.1:5173`.
+Sin argumentos â†’ UI en `http://127.0.0.1:5173`.
 
-## Qué es / qué no es
+## QuÃ© es / quÃ© no es
 
-**Es:** interfaz web educativa por defecto, más CLI (`analyze`, `fetch`, `html`, `json`, `serve`). Explicaciones didácticas sobre los tags.
+**Es:** interfaz web educativa por defecto, mÃ¡s CLI (`analyze`, `fetch`, `html`, `json`, `serve`). Explicaciones didÃ¡cticas sobre los tags.
 
 **No es:** MetaDissect puro (lib+CLI sin UI), ni herramienta forense IR (eso es MetaTrace), ni mutador (MetaFake).
 
@@ -14,16 +14,16 @@ Sin argumentos → UI en `http://127.0.0.1:5173`.
 
 | Proyecto | Acceso | Rol |
 |----------|--------|-----|
-| **MetaDissect** | [público](https://github.com/P3M-ACTF/metadissect) | Lib + CLI, sin UI |
-| **MetaInstructor** | [público](https://github.com/P3M-ACTF/metainstructor) | Web educativa (antes MetaPeek) |
-| **MetaTrace** | Privado — Hellcode Collective | Herramienta IR / forense |
-| **MetaFake** | Privado — Hellcode Collective | Mutación de metadatos (copias) |
+| **MetaDissect** | [pÃºblico](https://github.com/P3M-ACTF/metadissect) | Lib + CLI, sin UI |
+| **MetaInstructor** | [pÃºblico](https://github.com/P3M-ACTF/metainstructor) | Web educativa (antes MetaPeek) |
+| **MetaTrace** | Privado â€” Hellcode Collective | Herramienta IR / forense |
+| **MetaFake** | Privado â€” Hellcode Collective | MutaciÃ³n de metadatos (copias) |
 
-## Instalación
+## InstalaciÃ³n
 
 **Releases:** [Releases](https://github.com/P3M-ACTF/metainstructor/releases).
 
-**Desde código** (clonar junto a `metadissect` para el `[patch]`):
+**Desde cÃ³digo** (clonar junto a `metadissect` para el `[patch]`):
 
 ```bash
 # sibling: ../metadissect
@@ -37,7 +37,7 @@ Sin sibling: comenta el bloque `[patch."https://github.com/P3M-ACTF/metadissect"
 ## Ejemplos CLI
 
 ```bash
-metainstructor                 # serve → :5173
+metainstructor                 # serve â†’ :5173
 metainstructor serve --open
 metainstructor foto.jpg
 metainstructor analyze doc.pdf -f json
@@ -52,7 +52,7 @@ metainstructor fetch https://example.com/ -f markdown
 
 ## Privacidad
 
-Análisis local. La UI sirve en loopback por defecto. Una URL solo se descarga con `fetch`.
+AnÃ¡lisis local. La UI sirve en loopback por defecto. Una URL solo se descarga con `fetch`.
 
 ## Estructura de crates
 
@@ -64,15 +64,15 @@ Análisis local. La UI sirve en loopback por defecto. Una URL solo se descarga c
 
 ## Licencia
 
-[MIT](LICENSE) — Copyright 2026 MetaInstructor Contributors.
+[MIT](LICENSE) â€” Copyright 2026 MetaInstructor Contributors.
 
 ---
 
 ## English
 
-**MetaInstructor** is an educational metadata viewer (CLI + embedded web UI). Binary: `metainstructor`. **Formerly MetaPeek.** Depends on MetaDissect via git tag `v0.4.0` and a local `[patch]` when developing under the umbrella.
+**MetaInstructor** is an educational metadata viewer (CLI + embedded web UI). Binary: `metainstructor`. **Formerly MetaPeek.** Depends on MetaDissect via git tag `v0.5.0` and a local `[patch]` when developing under the umbrella.
 
-No args → serve on port **5173**.
+No args â†’ serve on port **5173**.
 
 ### What it is / is not
 
@@ -86,8 +86,8 @@ No args → serve on port **5173**.
 |---------|--------|------|
 | **MetaDissect** | [public](https://github.com/P3M-ACTF/metadissect) | Lib + CLI, no UI |
 | **MetaInstructor** | [public](https://github.com/P3M-ACTF/metainstructor) | Educational web (formerly MetaPeek) |
-| **MetaTrace** | Private — Hellcode Collective | IR / forensic tool |
-| **MetaFake** | Private — Hellcode Collective | Metadata mutation (copies) |
+| **MetaTrace** | Private â€” Hellcode Collective | IR / forensic tool |
+| **MetaFake** | Private â€” Hellcode Collective | Metadata mutation (copies) |
 
 ### Install
 
@@ -111,4 +111,4 @@ Local analysis; default bind `127.0.0.1:5173`.
 
 ### License
 
-[MIT](LICENSE) — Copyright 2026 MetaInstructor Contributors.
+[MIT](LICENSE) â€” Copyright 2026 MetaInstructor Contributors.

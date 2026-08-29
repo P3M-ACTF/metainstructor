@@ -1,8 +1,12 @@
-# Changelog
+﻿# Changelog
+
+## 0.3.1
+
+- Pin **MetaDissect** to `v0.5.0` (C2PA/JUMBF in the core library).
 
 ## 0.3.0
 
 - **Rebrand / split:** formerly **MetaPeek**; now **MetaInstructor** (educational web + CLI).
-- Depends on **MetaDissect** `v0.4.0` (git tag + local `[patch]` for umbrella).
+- Depends on **MetaDissect** (git tag + local `[patch]` for umbrella).
 - Default (no args): `serve` on `127.0.0.1:5173`.
 - Crates: `meta-explain`, `metainstructor-web`, `metainstructor-cli`.
