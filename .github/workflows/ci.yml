@@ -38,7 +38,7 @@ jobs:
         with:
           toolchain: stable
           components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@f20859758cff1f61e8d5c5b6aaf74e8ce42efb99 # v2.8.2
+      - uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
         with:
           workspaces: metainstructor
       - name: Format
@@ -70,7 +70,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772
         with:
           toolchain: stable
-      - uses: Swatinem/rust-cache@f20859758cff1f61e8d5c5b6aaf74e8ce42efb99 # v2.8.2
+      - uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
         with:
           workspaces: metainstructor
       - name: Test
@@ -92,7 +92,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772
         with:
           toolchain: stable
-      - uses: Swatinem/rust-cache@f20859758cff1f61e8d5c5b6aaf74e8ce42efb99 # v2.8.2
+      - uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
         with:
           workspaces: metainstructor
       - name: cargo audit

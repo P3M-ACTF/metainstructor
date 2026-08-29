@@ -3,8 +3,10 @@ use axum::http::{header, HeaderValue, StatusCode};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use metadissect::{analyze_buffer, analyze_html_string, analyze_json_string, AnalyzeOptions, Source};
 use meta_explain::{apply_explanations, glossary_json};
+use metadissect::{
+    analyze_buffer, analyze_html_string, analyze_json_string, AnalyzeOptions, Source,
+};
 use rust_embed::RustEmbed;
 use serde::Deserialize;
 use std::net::SocketAddr;

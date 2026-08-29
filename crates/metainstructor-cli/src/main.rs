@@ -1,8 +1,8 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand, ValueEnum};
+use meta_explain::apply_explanations;
 use metadissect::export::{to_csv, to_json, to_markdown};
 use metadissect::{analyze_html_string, analyze_json_string, analyze_path, AnalyzeOptions};
-use meta_explain::apply_explanations;
 use std::path::{Path, PathBuf};
 
 #[derive(Parser)]
