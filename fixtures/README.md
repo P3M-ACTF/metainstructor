@@ -10,4 +10,4 @@
 | `sample.html` | meta / OG / Twitter / JSON-LD |
 | `sample.eml` | RFC822 headers |
 
-`cargo test -p meta-core` regenerates the JPEG/PNG/PDF/HTML samples.
+`cargo test -p metadissect` regenerates the JPEG/PNG/PDF/HTML samples.

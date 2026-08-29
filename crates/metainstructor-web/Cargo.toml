@@ -1,13 +1,13 @@
-[package]
-name = "metapeek-web"
+﻿[package]
+name = "metainstructor-web"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Embedded Axum web UI for MetaPeek."
+description = "Embedded Axum web UI for MetaInstructor."
 
 [dependencies]
-meta-core.workspace = true
+metadissect.workspace = true
 meta-explain.workspace = true
 anyhow.workspace = true
 axum = { version = "0.8", features = ["multipart"] }

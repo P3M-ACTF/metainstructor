@@ -1,19 +1,19 @@
-[package]
-name = "metapeek-cli"
+﻿[package]
+name = "metainstructor-cli"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "MetaPeek command-line interface."
+description = "MetaInstructor command-line interface (web UI by default)."
 
 [[bin]]
-name = "metapeek"
+name = "metainstructor"
 path = "src/main.rs"
 
 [dependencies]
-meta-core.workspace = true
+metadissect.workspace = true
 meta-explain.workspace = true
-metapeek-web.workspace = true
+metainstructor-web.workspace = true
 anyhow.workspace = true
 clap = { version = "4", features = ["derive"] }
 serde_json.workspace = true

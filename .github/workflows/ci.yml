@@ -3,50 +3,100 @@ name: CI
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
   pull_request:
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+  workflow_dispatch:
+    inputs:
+      full:
+        description: "Also run on windows/macos (ci-full)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: metainstructor
+      - name: Checkout MetaDissect (patch / sibling)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: P3M-ACTF/metadissect
+          ref: v0.3.0
+          path: metadissect
       - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772
         with:
           toolchain: stable
           components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@f20859758cff1f61e8d5c5b6aaf74e8ce42efb99 # v2.8.2
+        with:
+          workspaces: metainstructor
       - name: Format
-        if: runner.os == 'Linux'
+        working-directory: metainstructor
         run: cargo fmt --all -- --check
       - name: Clippy
-        if: runner.os != 'Windows'
+        working-directory: metainstructor
         run: cargo clippy --workspace --all-targets -- -D warnings
       - name: Test
+        working-directory: metainstructor
         run: cargo test --workspace
-      - name: Build
-        run: cargo build --release
 
-  msrv:
-    runs-on: ubuntu-latest
+  ci-full:
+    if: github.event_name == 'workflow_dispatch' && inputs.full
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772
         with:
-          toolchain: 1.89.0
-      - name: MSRV check
-        run: cargo check --workspace
-
-  audit:
-    runs-on: ubuntu-latest
-    steps:
+          path: metainstructor
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: P3M-ACTF/metadissect
+          ref: v0.3.0
+          path: metadissect
       - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772
         with:
           toolchain: stable
+      - uses: Swatinem/rust-cache@f20859758cff1f61e8d5c5b6aaf74e8ce42efb99 # v2.8.2
+        with:
+          workspaces: metainstructor
+      - name: Test
+        working-directory: metainstructor
+        run: cargo test --workspace
+
+  audit:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: metainstructor
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: P3M-ACTF/metadissect
+          ref: v0.3.0
+          path: metadissect
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@f20859758cff1f61e8d5c5b6aaf74e8ce42efb99 # v2.8.2
+        with:
+          workspaces: metainstructor
       - name: cargo audit
+        working-directory: metainstructor
         run: |
           cargo install cargo-audit --locked
           cargo audit

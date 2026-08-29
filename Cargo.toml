@@ -1,34 +1,38 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/meta-core",
     "crates/meta-explain",
-    "crates/metapeek-cli",
-    "crates/metapeek-web",
+    "crates/metainstructor-cli",
+    "crates/metainstructor-web",
 ]
 default-members = [
-    "crates/meta-core",
     "crates/meta-explain",
-    "crates/metapeek-cli",
-    "crates/metapeek-web",
+    "crates/metainstructor-cli",
+    "crates/metainstructor-web",
 ]
 
 [workspace.package]
-version = "0.2.3"
+version = "0.3.0"
 edition = "2021"
 license = "MIT"
-repository = "https://github.com/P3M-ACTF/metapeek"
-authors = ["MetaPeek Contributors"]
+repository = "https://github.com/P3M-ACTF/metainstructor"
+authors = ["MetaInstructor Contributors"]
 rust-version = "1.89"
-description = "Local, exhaustive metadata analysis — educational and private by default."
+description = "Educational metadata viewer (web UI). Formerly MetaPeek."
 
 [workspace.dependencies]
-meta-core = { path = "crates/meta-core", version = "0.2.3" }
-meta-explain = { path = "crates/meta-explain", version = "0.2.3" }
-metapeek-web = { path = "crates/metapeek-web", version = "0.2.3" }
+# Pinned MetaDissect tag. Local umbrella overrides via [patch] below.
+metadissect = { git = "https://github.com/P3M-ACTF/metadissect", tag = "v0.3.0" }
+meta-explain = { path = "crates/meta-explain", version = "0.3.0" }
+metainstructor-web = { path = "crates/metainstructor-web", version = "0.3.0" }
 anyhow = "1"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std", "serde"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "fs", "io-util", "time"] }
+
+# Local umbrella: override the git tag with the sibling checkout.
+# Isolated clone without ../metadissect: comment out this [patch] block.
+[patch."https://github.com/P3M-ACTF/metadissect"]
+metadissect = { path = "../metadissect/crates/metadissect" }

@@ -1,4 +1,4 @@
-use meta_core::types::{Analysis, Field};
+use metadissect::types::{Analysis, Field};
 
 pub struct GlossaryEntry {
     pub keys: &'static [&'static str],
@@ -175,7 +175,7 @@ pub fn apply_explanations(analysis: &mut Analysis) {
     }
     if analysis.notes_educativas.is_empty() {
         analysis.notes_educativas.push(
-            "MetaPeek muestra todas las etiquetas que el parser lee; no hay lista blanca. Un campo ausente no implica que no existiera: pudo borrarse al exportar.".into(),
+            "MetaInstructor muestra todas las etiquetas que el parser lee; no hay lista blanca. Un campo ausente no implica que no existiera: pudo borrarse al exportar.".into(),
         );
     }
 }

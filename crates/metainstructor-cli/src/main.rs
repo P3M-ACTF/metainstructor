@@ -1,15 +1,15 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand, ValueEnum};
-use meta_core::export::{to_csv, to_json, to_markdown};
-use meta_core::{analyze_html_string, analyze_json_string, analyze_path, AnalyzeOptions};
+use metadissect::export::{to_csv, to_json, to_markdown};
+use metadissect::{analyze_html_string, analyze_json_string, analyze_path, AnalyzeOptions};
 use meta_explain::apply_explanations;
 use std::path::{Path, PathBuf};
 
 #[derive(Parser)]
 #[command(
-    name = "metapeek",
+    name = "metainstructor",
     version,
-    about = "Exhaustive local metadata analysis (CLI + embedded web)."
+    about = "Educational metadata viewer (CLI + web UI). Formerly MetaPeek. Default: serve."
 )]
 struct Cli {
     #[command(subcommand)]
@@ -18,6 +18,13 @@ struct Cli {
     path: Option<PathBuf>,
     #[arg(long, short = 'f', default_value = "table")]
     format: OutputFormat,
+    #[arg(long, default_value = "127.0.0.1")]
+    host: String,
+    #[arg(long, default_value_t = 5173)]
+    port: u16,
+    /// Open a desktop browser when starting the UI. Ignored on Termux/headless.
+    #[arg(long)]
+    open: bool,
 }
 
 #[derive(Subcommand)]
@@ -74,7 +81,7 @@ async fn main() -> Result<()> {
     match cli.command {
         Some(Command::Serve { host, port, open }) => {
             warn_bind(&host);
-            metapeek_web::serve(&host, port, open).await?;
+            metainstructor_web::serve(&host, port, open).await?;
         }
         Some(Command::Analyze { path, format }) => print_analysis_path(&path, format)?,
         Some(Command::Html { file, format }) => {
@@ -102,15 +109,18 @@ async fn main() -> Result<()> {
             print_analysis(&a, format)?;
         }
         Some(Command::Fetch { url, format }) => {
-            let mut a = meta_core::fetch::fetch_and_analyze(&url).await?;
+            let mut a = metadissect::fetch::fetch_and_analyze(&url).await?;
             apply_explanations(&mut a);
             print_analysis(&a, format)?;
         }
         None => {
-            let path = cli.path.ok_or_else(|| {
-                anyhow::anyhow!("pass a file path or a subcommand (analyze, serve, fetch)")
-            })?;
-            print_analysis_path(&path, cli.format)?;
+            if let Some(path) = cli.path {
+                print_analysis_path(&path, cli.format)?;
+            } else {
+                // Educational UI by default (no args → serve).
+                warn_bind(&cli.host);
+                metainstructor_web::serve(&cli.host, cli.port, cli.open).await?;
+            }
         }
     }
     Ok(())
@@ -122,7 +132,7 @@ fn print_analysis_path(path: &Path, format: OutputFormat) -> Result<()> {
     print_analysis(&a, format)
 }
 
-fn print_analysis(a: &meta_core::Analysis, format: OutputFormat) -> Result<()> {
+fn print_analysis(a: &metadissect::Analysis, format: OutputFormat) -> Result<()> {
     match format {
         OutputFormat::Json => println!("{}", to_json(a)?),
         OutputFormat::Csv => print!("{}", to_csv(a)),
@@ -132,9 +142,9 @@ fn print_analysis(a: &meta_core::Analysis, format: OutputFormat) -> Result<()> {
     Ok(())
 }
 
-fn print_table(a: &meta_core::Analysis) {
+fn print_table(a: &metadissect::Analysis) {
     println!(
-        "MetaPeek  {}  {}  {} bytes  entropy={:.3}",
+        "MetaInstructor  {}  {}  {} bytes  entropy={:.3}",
         a.filename.as_deref().unwrap_or("-"),
         a.mime,
         a.size,
@@ -146,7 +156,7 @@ fn print_table(a: &meta_core::Analysis) {
         println!("── {} ──", sec.label);
         for f in &sec.fields {
             let ns = f.namespace.as_deref().unwrap_or("");
-            let val = meta_core::truncate_chars(&f.value, 120);
+            let val = metadissect::truncate_chars(&f.value, 120);
             if ns.is_empty() {
                 println!("  {:28} {}", f.key, val);
             } else {
@@ -159,6 +169,12 @@ fn print_table(a: &meta_core::Analysis) {
         println!("── Warnings ──");
         for w in &a.warnings {
             println!("  ! {w}");
+        }
+    }
+    if !a.notes_educativas.is_empty() {
+        println!("── Notes ──");
+        for n in &a.notes_educativas {
+            println!("  · {n}");
         }
     }
     let _ = AnalyzeOptions::default();

@@ -82,9 +82,9 @@ $("fetch").addEventListener("click", async () => {
 $("analyze-html").addEventListener("click", () => text("html"));
 $("analyze-json").addEventListener("click", () => text("json"));
 $("search").addEventListener("input", onSearch);
-$("export-json").addEventListener("click", () => download("metapeek.json", JSON.stringify(analysis, null, 2)));
-$("export-csv").addEventListener("click", () => download("metapeek.csv", toCsv(analysis)));
-$("export-md").addEventListener("click", () => download("metapeek.md", toMd(analysis)));
+$("export-json").addEventListener("click", () => download("metainstructor.json", JSON.stringify(analysis, null, 2)));
+$("export-csv").addEventListener("click", () => download("metainstructor.csv", toCsv(analysis)));
+$("export-md").addEventListener("click", () => download("metainstructor.md", toMd(analysis)));
 
 document.addEventListener("click", (e) => {
   const copyBtn = e.target.closest("[data-copy]");
@@ -462,7 +462,7 @@ function csv(v) {
 }
 function toMd(a) {
   if (!a) return "";
-  let md = `# ${a.filename || "MetaPeek"}\n\n`;
+  let md = `# ${a.filename || "MetaInstructor"}\n\n`;
   for (const sec of a.sections || []) {
     md += `## ${sec.label}\n\n`;
     for (const f of sec.fields || []) md += `- **${f.key}**: ${f.value}\n`;

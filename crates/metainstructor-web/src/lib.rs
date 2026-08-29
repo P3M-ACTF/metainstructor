@@ -3,7 +3,7 @@ use axum::http::{header, HeaderValue, StatusCode};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use meta_core::{analyze_buffer, analyze_html_string, analyze_json_string, AnalyzeOptions, Source};
+use metadissect::{analyze_buffer, analyze_html_string, analyze_json_string, AnalyzeOptions, Source};
 use meta_explain::{apply_explanations, glossary_json};
 use rust_embed::RustEmbed;
 use serde::Deserialize;
@@ -45,7 +45,7 @@ pub async fn serve(host: &str, port: u16, open: bool) -> anyhow::Result<()> {
     let addr: SocketAddr = format!("{host}:{port}").parse()?;
     let listener = tokio::net::TcpListener::bind(addr).await?;
     let url = format!("http://{addr}");
-    println!("MetaPeek web UI: {url}");
+    println!("MetaInstructor web UI: {url}");
     if open && !is_headless() {
         let _ = webbrowser::open(&url);
     } else if is_headless() {
@@ -110,7 +110,7 @@ fn mime_guess(path: &str) -> &'static str {
 }
 
 async fn health() -> Json<serde_json::Value> {
-    Json(serde_json::json!({ "ok": true, "name": "metapeek" }))
+    Json(serde_json::json!({ "ok": true, "name": "metainstructor" }))
 }
 
 async fn glossary() -> Json<serde_json::Value> {
@@ -159,7 +159,7 @@ struct FetchReq {
 }
 
 async fn fetch_url(Json(req): Json<FetchReq>) -> Result<Json<serde_json::Value>, AppError> {
-    let mut analysis = meta_core::fetch::fetch_and_analyze(&req.url)
+    let mut analysis = metadissect::fetch::fetch_and_analyze(&req.url)
         .await
         .map_err(AppError::bad)?;
     apply_explanations(&mut analysis);
