@@ -70,7 +70,7 @@ Análisis local. La UI sirve en loopback por defecto. Una URL solo se descarga c
 
 ## English
 
-**MetaInstructor** is an educational metadata viewer (CLI + embedded web UI). Binary: `metainstructor`. **Formerly MetaPeek.** Depends on MetaDissect via git tag `v0.7.0` and a local `[patch]` when developing under the umbrella.
+**MetaInstructor** is an educational metadata viewer (CLI + embedded web UI). Binary: `metainstructor`. **Formerly MetaPeek.** Depends on MetaDissect via git tag `v0.9.0` and a local `[patch]` when developing under the umbrella.
 
 No args → serve on port **5173**.
 
