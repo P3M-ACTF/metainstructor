@@ -1,69 +1,80 @@
-# MetaInstructor
+# MetaInstructor 📖
 
-Visor educativo de metadatos (CLI + UI web). Binario: `metainstructor`. **Formerly MetaPeek.** Pin MetaDissect **`v0.11.1`** (+ `[patch]` local).
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/P3M-ACTF/metainstructor)](https://github.com/P3M-ACTF/metainstructor/releases)
+[![CI](https://github.com/P3M-ACTF/metainstructor/actions/workflows/ci.yml/badge.svg)](https://github.com/P3M-ACTF/metainstructor/actions/workflows/ci.yml)
+[![MSRV](https://img.shields.io/badge/rustc-1.89%2B-orange.svg)](https://github.com/P3M-ACTF/metainstructor)
 
-Sin argumentos → `http://127.0.0.1:5173`.
+Visor educativo de metadatos (CLI + UI web). Binario: `metainstructor`. **Formerly MetaPeek.** Pin MetaDissect **`v0.11.1`**.
 
-Docs: **[Wiki](https://github.com/P3M-ACTF/metainstructor/wiki)** · **[Estado](https://github.com/P3M-ACTF/metainstructor/wiki/Estado)** · core: [MetaDissect wiki](https://github.com/P3M-ACTF/metadissect/wiki).
+> [!TIP]
+> Sin argumentos abre la UI en `http://127.0.0.1:5173`. En Windows: `.\metainstructor.exe` o el binario de [Releases](https://github.com/P3M-ACTF/metainstructor/releases).
 
-## Qué es / qué no es
+> [!NOTE]
+> En la web, `?` abre el glosario. El core de parsers vive en [MetaDissect](https://github.com/P3M-ACTF/metadissect).
 
-**Es:** UI web educativa + CLI (`analyze`, `fetch`, `html`, `json`, `serve`) + TUI/`serve` dashboard vía `meta-ui`.
+## Arranque en 30 s
 
-**No es:** MetaDissect puro, IR (MetaTrace) ni mutador (MetaFake).
+```bash
+# Binario: https://github.com/P3M-ACTF/metainstructor/releases
+metainstructor                  # → :5173
+metainstructor foto.jpg         # TUI analyze
+metainstructor serve --open
+```
+
+Desde fuente (con sibling `../metadissect` + `[patch]`, o comenta el patch y usa el tag):
+
+```bash
+git clone https://github.com/P3M-ACTF/metainstructor.git && cd metainstructor
+cargo build --release -p metainstructor-cli
+```
+
+## Qué es / no es
+
+**Es**
+
+- 🚀 Arranca la UI educativa sin args (`:5173`).
+- Explica campos con glosario y capa `meta-ui`.
+- CLI: `analyze`, `fetch`, `html`, `json`, `serve` (+ TUI).
+- Depende del motor MetaDissect por git tag.
+
+**No es**
+
+- El motor puro ([MetaDissect](https://github.com/P3M-ACTF/metadissect)).
+- Una herramienta de IR (MetaTrace).
+- Un mutador de metadatos (MetaFake).
+- Un crawler de sitios.
 
 ## Familia
 
+Cuatro repos, un motor:
+
 | Proyecto | Acceso | Rol |
 |----------|--------|-----|
-| **MetaDissect** | [público](https://github.com/P3M-ACTF/metadissect) | Lib + CLI |
+| **MetaDissect** | [público](https://github.com/P3M-ACTF/metadissect) | Lib + CLI + API JSON |
 | **MetaInstructor** | [público](https://github.com/P3M-ACTF/metainstructor) | Web educativa |
 | **MetaTrace** | Privado — Hellcode Collective | IR / forense |
 | **MetaFake** | Privado — Hellcode Collective | Mutación (copias) |
 
-## Instalación
-
-[Releases](https://github.com/P3M-ACTF/metainstructor/releases) o sibling `../metadissect`:
-
-```bash
-git clone https://github.com/P3M-ACTF/metainstructor.git
-cd metainstructor
-cargo build --release -p metainstructor-cli
-```
-
-Sin sibling: comenta `[patch]` y usa el tag git.
-
-## Comandos
-
-```bash
-metainstructor
-metainstructor serve --open --token "$META_SERVE_TOKEN"
-metainstructor foto.jpg
-metainstructor analyze doc.pdf -f json --no-tui
-metainstructor fetch https://example.com/ -f markdown
-```
-
-Teclas TUI, token remoto y UI → [Wiki · Uso](https://github.com/P3M-ACTF/metainstructor/wiki/Uso).
-
 ## Privacidad
 
-Análisis local; bind por defecto loopback.
+> [!NOTE]
+> Análisis local; bind por defecto en loopback. Bind remoto exige token.
 
-## Crates
+## Docs y licencia
 
-`meta-explain` · `metainstructor-web` · `metainstructor-cli`
+Docs largas: **[Wiki](https://github.com/P3M-ACTF/metainstructor/wiki)** · **[Estado](https://github.com/P3M-ACTF/metainstructor/wiki/Estado)** · core: [MetaDissect wiki](https://github.com/P3M-ACTF/metadissect/wiki).
 
-## Licencia
+Crates: `meta-explain` · `metainstructor-web` · `metainstructor-cli`.
 
 [MIT](LICENSE) — Copyright 2026 MetaInstructor Contributors.
 
----
-
-## English
+<details>
+<summary>English</summary>
 
 **MetaInstructor** — educational metadata viewer (CLI + embedded web). Binary: `metainstructor`. **Formerly MetaPeek.** Depends on MetaDissect `v0.11.1`. Default UI: port **5173**.
 
-Docs: **[Wiki](https://github.com/P3M-ACTF/metainstructor/wiki)**. Not the core lib-only product, IR tool, or mutator.
+**Is:** educational UI + CLI/TUI. **Is not:** core lib-only product, IR tool, or mutator.
 
 ```bash
 metainstructor
@@ -71,4 +82,6 @@ metainstructor serve --open
 metainstructor foto.jpg -f json
 ```
 
-License: [MIT](LICENSE).
+Docs: **[Wiki](https://github.com/P3M-ACTF/metainstructor/wiki)**. License: [MIT](LICENSE).
+
+</details>
