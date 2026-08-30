@@ -1,6 +1,7 @@
 let analysis = null;
 let glossary = [];
 let activeKey = "";
+let glossaryOverlay = null;
 
 const $ = (id) => document.getElementById(id);
 const status = (m) => { $("status").textContent = m || ""; };
@@ -291,9 +292,7 @@ function spanTitle(f) {
   return parts.join(" · ");
 }
 
-function explain(key) {
-  activeKey = key;
-  markActiveRow();
+function renderExplainHtml(key) {
   const hit = allFields().find((x) => x.field.key === key);
   const f = hit?.field;
   let body = `<p><strong>${esc(key)}</strong></p>`;
@@ -305,7 +304,18 @@ function explain(key) {
   const g = glossary.find((e) => (e.keys || []).some((k) => k.toLowerCase() === key.toLowerCase()));
   if (g) body += `<p><strong>${esc(g.title_es)}</strong></p><p>${esc(g.body_es)}</p><p>${esc(g.body_en)}</p>`;
   if (!f?.explanation && !g) body += `<p class="story">Sin entrada de glosario. El valor se muestra igual: no se oculta.</p>`;
-  $("explain-body").innerHTML = body;
+  return body;
+}
+
+function explain(key) {
+  activeKey = key;
+  markActiveRow();
+  $("explain-body").innerHTML = renderExplainHtml(key);
+  glossaryOverlay?.resetAsideScroll();
+  glossaryOverlay?.syncOverlay();
+  if (glossaryOverlay?.isNarrow()) glossaryOverlay.openOverlay();
+  const row = $("fields")?.querySelector(`tr[data-key="${CSS.escape(key)}"]`);
+  row?.scrollIntoView({ block: "nearest" });
 }
 
 function markActiveRow() {
@@ -488,3 +498,11 @@ function escAttr(s) {
 }
 
 fetch("/api/glossary").then((r) => r.json()).then((j) => { glossary = j; }).catch(() => {});
+
+if (window.MetaShell?.wireGlossaryOverlay) {
+  glossaryOverlay = MetaShell.wireGlossaryOverlay({
+    explainEl: $("explain"),
+    toggleBtn: $("explain-toggle"),
+    toggleKey: "?",
+  });
+}

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.8
+
+- **meta-explain:** ~18 nuevas entradas de glosario (C2PA, imagen, contenedor, Office/PDF, forense, PE).
+- **Web:** panel de explicación sticky; overlay móvil con `?` / botón Explicación (`wireGlossaryOverlay`).
+- Pin **MetaDissect** to `v0.11.2`.
+
 ## 0.3.7
 
 - **meta-ui:** shared shell CSS/JS via `/meta-ui/`; compact intake, sticky file-bar; accent `#7dd3fc`.
