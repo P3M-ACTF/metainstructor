@@ -6,9 +6,9 @@ use axum::routing::{get, post};
 use axum::{Json, Router};
 use meta_explain::{apply_explanations, glossary_json};
 use meta_ui::{
-    check_serve_token, is_headless_env, is_tty_stdio, maybe_print_banner,
-    query_token_param, shell_css, shell_css_mime,
-    shell_js, shell_js_mime, Product, RetainConfig, RetainStore, ServeStats,
+    check_serve_token, is_headless_env, is_tty_stdio, maybe_print_banner, query_token_param,
+    shell_css, shell_css_mime, shell_js, shell_js_mime, Product, RetainConfig, RetainStore,
+    ServeStats,
 };
 use metadissect::{
     analyze_buffer, analyze_html_string, analyze_json_string, AnalyzeOptions, Source,
@@ -41,19 +41,15 @@ pub async fn serve(cfg: ServeConfig) -> anyhow::Result<()> {
     maybe_print_banner(Product::Metainstructor, cfg.no_banner);
     meta_ui::warn_remote_bind(&cfg.host);
 
-    let token = cfg
-        .token
-        .or_else(|| std::env::var("META_SERVE_TOKEN").ok());
+    let token = cfg.token.or_else(|| std::env::var("META_SERVE_TOKEN").ok());
     let auth = ServeAuth {
         host: cfg.host.clone(),
         token,
     };
-    let retain = Arc::new(RetainStore::new(
-        RetainConfig::new(
-            cfg.retain_dir.unwrap_or_default(),
-            cfg.retain_ttl_secs.unwrap_or(3600),
-        ),
-    ));
+    let retain = Arc::new(RetainStore::new(RetainConfig::new(
+        cfg.retain_dir.unwrap_or_default(),
+        cfg.retain_ttl_secs.unwrap_or(3600),
+    )));
     let stats = Arc::new(ServeStats::new());
     let stop = Arc::new(AtomicBool::new(false));
 
@@ -151,14 +147,7 @@ async fn auth_middleware(
         .get(header::AUTHORIZATION)
         .and_then(|v| v.to_str().ok());
     let query_token = query_token_param(req.uri().query());
-    if check_serve_token(
-        &auth.host,
-        auth.token.as_deref(),
-        provided,
-        query_token,
-    )
-    .is_err()
-    {
+    if check_serve_token(&auth.host, auth.token.as_deref(), provided, query_token).is_err() {
         return (StatusCode::UNAUTHORIZED, "unauthorized").into_response();
     }
     next.run(req).await
@@ -187,7 +176,10 @@ struct AppState {
 async fn shell_css_handler() -> impl IntoResponse {
     (
         StatusCode::OK,
-        [(header::CONTENT_TYPE, HeaderValue::from_static(shell_css_mime()))],
+        [(
+            header::CONTENT_TYPE,
+            HeaderValue::from_static(shell_css_mime()),
+        )],
         shell_css(),
     )
 }
@@ -195,7 +187,10 @@ async fn shell_css_handler() -> impl IntoResponse {
 async fn shell_js_handler() -> impl IntoResponse {
     (
         StatusCode::OK,
-        [(header::CONTENT_TYPE, HeaderValue::from_static(shell_js_mime()))],
+        [(
+            header::CONTENT_TYPE,
+            HeaderValue::from_static(shell_js_mime()),
+        )],
         shell_js(),
     )
 }

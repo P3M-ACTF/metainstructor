@@ -1,9 +1,9 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand, ValueEnum};
 use meta_explain::apply_explanations;
-use meta_ui::{maybe_print_banner, Product};
 #[cfg(feature = "tui")]
 use meta_ui::tui::{run_analyze_tui, should_use_analyze_tui};
+use meta_ui::{maybe_print_banner, Product};
 use metadissect::export::{to_csv, to_json, to_markdown};
 use metadissect::{analyze_html_string, analyze_json_string, analyze_path, AnalyzeOptions};
 use std::path::{Path, PathBuf};
@@ -127,10 +127,18 @@ async fn main() -> Result<()> {
             })
             .await?;
         }
-        Some(Command::Analyze { path, format, no_tui }) => {
+        Some(Command::Analyze {
+            path,
+            format,
+            no_tui,
+        }) => {
             print_analysis_path(&path, format, no_tui)?;
         }
-        Some(Command::Html { file, format, no_tui }) => {
+        Some(Command::Html {
+            file,
+            format,
+            no_tui,
+        }) => {
             let name = file
                 .as_ref()
                 .and_then(|p| p.file_name())
@@ -142,7 +150,11 @@ async fn main() -> Result<()> {
             apply_explanations(&mut a);
             print_analysis(&a, format, no_tui)?;
         }
-        Some(Command::Json { file, format, no_tui }) => {
+        Some(Command::Json {
+            file,
+            format,
+            no_tui,
+        }) => {
             let name = file
                 .as_ref()
                 .and_then(|p| p.file_name())
@@ -154,7 +166,11 @@ async fn main() -> Result<()> {
             apply_explanations(&mut a);
             print_analysis(&a, format, no_tui)?;
         }
-        Some(Command::Fetch { url, format, no_tui }) => {
+        Some(Command::Fetch {
+            url,
+            format,
+            no_tui,
+        }) => {
             let mut a = metadissect::fetch::fetch_and_analyze(&url).await?;
             apply_explanations(&mut a);
             print_analysis(&a, format, no_tui)?;
