@@ -10,7 +10,7 @@ Metadata/
   metainstructor/
 ```
 
-`[patch."https://github.com/P3M-ACTF/metadissect"]` overrides the git tag with the sibling path. Without `../metadissect`, comment out `[patch]` and use tag `v0.11.0` (or newer).
+`[patch."https://github.com/P3M-ACTF/metadissect"]` overrides the git tag with the sibling path. Without `../metadissect`, comment out `[patch]` and use tag `v0.11.1` (or newer).
 
 Pin both `metadissect` and `meta-ui` from the same MetaDissect tag. Do **not** publish `meta-ui` to crates.io.
 
