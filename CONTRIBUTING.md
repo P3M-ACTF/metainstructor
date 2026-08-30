@@ -24,6 +24,10 @@ cargo test --workspace
 
 **MSRV:** Rust **1.89**.
 
+## Documentation
+
+Long-form docs live in the **[GitHub Wiki](https://github.com/P3M-ACTF/metainstructor/wiki)**. Do **not** add LLM instruction files (`CLAUDE.md`, `llms.txt`, etc.). In-repo agent contract: [`AGENTS.md`](AGENTS.md) only.
+
 ## Pull requests
 
 - Target **`main`**.
