@@ -10,11 +10,16 @@ description = "MetaInstructor command-line interface (web UI by default)."
 name = "metainstructor"
 path = "src/main.rs"
 
+[features]
+default = ["tui"]
+tui = ["meta-ui/tui"]
+
 [dependencies]
 metadissect.workspace = true
 meta-explain.workspace = true
+meta-ui.workspace = true
 metainstructor-web.workspace = true
 anyhow.workspace = true
-clap = { version = "4", features = ["derive"] }
+clap = { version = "4", features = ["derive", "env"] }
 serde_json.workspace = true
 tokio.workspace = true

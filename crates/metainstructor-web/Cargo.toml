@@ -6,9 +6,14 @@ license.workspace = true
 repository.workspace = true
 description = "Embedded Axum web UI for MetaInstructor."
 
+[features]
+default = ["tui"]
+tui = ["meta-ui/tui"]
+
 [dependencies]
 metadissect.workspace = true
 meta-explain.workspace = true
+meta-ui.workspace = true
 anyhow.workspace = true
 axum = { version = "0.8", features = ["multipart"] }
 rust-embed = "8"

@@ -1,5 +1,11 @@
 ﻿# Changelog
 
+## 0.3.7
+
+- **meta-ui:** shared shell CSS/JS via `/meta-ui/`; compact intake, sticky file-bar; accent `#7dd3fc`.
+- **CLI:** analyze TUI on TTY; `serve` dashboard (RPS, latency, sparkline); `--no-banner`, `--no-tui`, `--token`, `--retain-dir`.
+- Pin **MetaDissect** to `v0.11.0`.
+
 ## 0.3.6
 
 - Pin **MetaDissect** to `v0.10.0` (C2PA trust anchors, `extract`, ingredients section, compact C2PA warnings).

@@ -12,7 +12,7 @@ default-members = [
 ]
 
 [workspace.package]
-version = "0.3.6"
+version = "0.3.7"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/P3M-ACTF/metainstructor"
@@ -22,9 +22,10 @@ description = "Educational metadata viewer (web UI). Formerly MetaPeek."
 
 [workspace.dependencies]
 # Pinned MetaDissect tag. Local umbrella overrides via [patch] below.
-metadissect = { git = "https://github.com/P3M-ACTF/metadissect", tag = "v0.10.0" }
-meta-explain = { path = "crates/meta-explain", version = "0.3.6" }
-metainstructor-web = { path = "crates/metainstructor-web", version = "0.3.6" }
+metadissect = { git = "https://github.com/P3M-ACTF/metadissect", tag = "v0.11.0" }
+meta-ui = { git = "https://github.com/P3M-ACTF/metadissect", tag = "v0.11.0" }
+meta-explain = { path = "crates/meta-explain", version = "0.3.7" }
+metainstructor-web = { path = "crates/metainstructor-web", version = "0.3.7" }
 anyhow = "1"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std", "serde"] }
 serde = { version = "1", features = ["derive"] }
@@ -36,3 +37,4 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "fs", "
 # Isolated clone without ../metadissect: comment out this [patch] block.
 [patch."https://github.com/P3M-ACTF/metadissect"]
 metadissect = { path = "../metadissect/crates/metadissect" }
+meta-ui = { path = "../metadissect/crates/meta-ui" }

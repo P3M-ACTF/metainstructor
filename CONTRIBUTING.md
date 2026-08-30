@@ -10,7 +10,9 @@ Metadata/
   metainstructor/
 ```
 
-`[patch."https://github.com/P3M-ACTF/metadissect"]` overrides the git tag with the sibling path. Without `../metadissect`, comment out `[patch]` and use tag `v0.7.0` (or newer).
+`[patch."https://github.com/P3M-ACTF/metadissect"]` overrides the git tag with the sibling path. Without `../metadissect`, comment out `[patch]` and use tag `v0.11.0` (or newer).
+
+Pin both `metadissect` and `meta-ui` from the same MetaDissect tag. Do **not** publish `meta-ui` to crates.io.
 
 ## Checks
 
@@ -31,5 +33,5 @@ cargo test --workspace
 ## Bumping the MetaDissect pin
 
 1. Tag MetaDissect (`vX.Y.Z`).
-2. Change `tag = "vX.Y.Z"` in `[workspace.dependencies]` `metadissect`.
+2. Change `tag = "vX.Y.Z"` for `metadissect` and `meta-ui` in `[workspace.dependencies]`.
 3. Verify with/without `[patch]`; run `cargo test --workspace`; update `CHANGELOG.md`.
